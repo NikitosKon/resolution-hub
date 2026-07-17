@@ -114,3 +114,32 @@ test("mobile layout has no horizontal overflow", async ({ page }) => {
   );
   expect(overflow).toBe(false);
 });
+
+test("global search opens on article pages and links to published guides", async ({
+  page,
+}) => {
+  await page.goto("/ru/paypal/funds-held-180-days/");
+  await page.getByRole("button", { name: "Поиск" }).click();
+  await expect(
+    page.getByRole("dialog", { name: "Поиск по разборам" }),
+  ).toBeVisible();
+  await page
+    .getByPlaceholder("Введите платформу, ограничение или сообщение")
+    .fill("mc011");
+  const result = page.locator(
+    '.search-dialog-results a[href="/ru/ebay/mc011-documents-requested/"]',
+  );
+  await expect(result).toBeVisible();
+});
+
+test("local draft builder is available in development", async ({ page }) => {
+  const response = await page.goto("/admin/");
+  expect(response?.status()).toBe(200);
+  await expect(
+    page.getByRole("heading", { name: "Article draft builder" }),
+  ).toBeVisible();
+  await page.getByLabel("Title").fill("PayPal account under review");
+  await expect(page.locator(".admin-preview h1")).toHaveText(
+    "PayPal account under review",
+  );
+});

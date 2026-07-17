@@ -11,7 +11,6 @@ import {
   LockKeyhole,
   Menu,
   MessageSquareText,
-  Search,
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
@@ -25,9 +24,29 @@ import type {
   Platform,
 } from "@/data/schema";
 import { siteConfig } from "@/lib/config";
+import { publishedIssues, platforms } from "@/data";
+import { getV4Article } from "@/data/v4";
+import { GlobalSearchDialog, type GlobalSearchEntry } from "./client-controls";
+
+function searchEntries(locale: Locale): GlobalSearchEntry[] {
+  return publishedIssues.map((issue) => {
+    const platform = platforms.find((item) => item.id === issue.platformId);
+    const v4Content = getV4Article(issue.id, locale);
+    const content = issue.content[locale];
+    return {
+      id: issue.id,
+      href: `/${locale}/${issue.platformId}/${issue.slug}/`,
+      platform: platform?.name ?? issue.platformId,
+      title: v4Content?.title ?? content.title,
+      description: v4Content?.metaDescription ?? content.metaDescription,
+      keywords: [issue.keywords.primary, ...issue.keywords.secondary],
+    };
+  });
+}
 
 export function Header({ locale }: { locale: Locale }) {
   const d = getDictionary(locale);
+  const entries = searchEntries(locale);
   return (
     <header className="site-header">
       <div className="container nav-row">
@@ -41,9 +60,11 @@ export function Header({ locale }: { locale: Locale }) {
           <Link className="nav-link" href={`/${locale}/account-suspensions/`}>
             {d.nav.guides}
           </Link>
-          <Link className="nav-link" href={`/${locale}/#problem-search`}>
-            {d.nav.search}
-          </Link>
+          <GlobalSearchDialog
+            locale={locale}
+            entries={entries}
+            triggerClassName="nav-link nav-button"
+          />
           <a
             className="nav-link telegram-nav"
             href={siteConfig.telegram}
@@ -53,13 +74,7 @@ export function Header({ locale }: { locale: Locale }) {
           </a>
         </nav>
         <div className="mobile-nav">
-          <Link
-            className="icon-button"
-            href={`/${locale}/#problem-search`}
-            aria-label={d.nav.search}
-          >
-            <Search size={19} aria-hidden="true" />
-          </Link>
+          <GlobalSearchDialog locale={locale} entries={entries} compact />
           <details className="mobile-menu">
             <summary className="icon-button" aria-label={d.nav.openMenu}>
               <Menu size={20} aria-hidden="true" />

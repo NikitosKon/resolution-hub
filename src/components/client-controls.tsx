@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Moon, Search, Sun } from "lucide-react";
+import { Moon, Search, Sun, X } from "lucide-react";
 import { localeNames, locales, type Locale } from "@/lib/locales";
 import { localizedPath } from "@/lib/urls";
 import type { IssuePage, Platform } from "@/data/schema";
@@ -229,5 +229,177 @@ export function HomeProblemSearch({
         </div>
       ) : null}
     </div>
+  );
+}
+
+export type GlobalSearchEntry = {
+  id: string;
+  href: string;
+  platform: string;
+  title: string;
+  description: string;
+  keywords: string[];
+};
+
+const searchCopy = {
+  en: {
+    title: "Search guides",
+    placeholder: "Type a platform, restriction or message",
+    empty: "No guide matches this yet.",
+    close: "Close search",
+    open: "Search",
+    hint: "Published guides only",
+  },
+  ru: {
+    title: "Поиск по разборам",
+    placeholder: "Введите платформу, ограничение или сообщение",
+    empty: "Пока нет подходящего разбора.",
+    close: "Закрыть поиск",
+    open: "Поиск",
+    hint: "Только опубликованные разборы",
+  },
+  uk: {
+    title: "Пошук за розборами",
+    placeholder: "Введіть платформу, обмеження або повідомлення",
+    empty: "Поки немає відповідного розбору.",
+    close: "Закрити пошук",
+    open: "Пошук",
+    hint: "Лише опубліковані розбори",
+  },
+} as const;
+
+function normalize(value: string, locale: Locale) {
+  return value.trim().toLocaleLowerCase(locale);
+}
+
+export function GlobalSearchDialog({
+  locale,
+  entries,
+  compact = false,
+  triggerClassName,
+}: {
+  locale: Locale;
+  entries: GlobalSearchEntry[];
+  compact?: boolean;
+  triggerClassName?: string;
+}) {
+  const copy = searchCopy[locale];
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const results = useMemo(() => {
+    const normalized = normalize(query, locale);
+    const source = normalized
+      ? entries.filter((entry) =>
+          [entry.platform, entry.title, entry.description, ...entry.keywords]
+            .join(" ")
+            .toLocaleLowerCase(locale)
+            .includes(normalized),
+        )
+      : entries;
+    return source.slice(0, 6);
+  }, [entries, locale, query]);
+
+  useEffect(() => {
+    function handleKeydown(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setOpen(true);
+      }
+      if (event.key === "Escape") setOpen(false);
+    }
+    window.addEventListener("keydown", handleKeydown);
+    return () => window.removeEventListener("keydown", handleKeydown);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const frame = requestAnimationFrame(() => inputRef.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        dialogRef.current &&
+        !dialogRef.current.contains(target)
+      )
+        setOpen(false);
+    }
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [open]);
+
+  return (
+    <>
+      <button
+        type="button"
+        className={
+          triggerClassName ?? (compact ? "icon-button" : "nav-link nav-button")
+        }
+        aria-label={copy.open}
+        onClick={() => setOpen(true)}
+      >
+        {compact ? <Search size={19} aria-hidden="true" /> : copy.open}
+      </button>
+      {open ? (
+        <div className="search-dialog-backdrop" role="presentation">
+          <div
+            className="search-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="global-search-title"
+            ref={dialogRef}
+          >
+            <div className="search-dialog-head">
+              <div>
+                <h2 id="global-search-title">{copy.title}</h2>
+                <span>{copy.hint}</span>
+              </div>
+              <button
+                className="icon-button"
+                type="button"
+                aria-label={copy.close}
+                onClick={() => setOpen(false)}
+              >
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+            <div className="search-dialog-field">
+              <Search size={20} aria-hidden="true" />
+              <input
+                ref={inputRef}
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={copy.placeholder}
+                aria-label={copy.placeholder}
+              />
+            </div>
+            <div className="search-dialog-results" aria-live="polite">
+              {results.length ? (
+                results.map((entry) => (
+                  <Link
+                    key={entry.id}
+                    href={entry.href}
+                    onClick={() => setOpen(false)}
+                  >
+                    <span>{entry.platform}</span>
+                    <strong>{entry.title}</strong>
+                    <small>{entry.description}</small>
+                  </Link>
+                ))
+              ) : (
+                <p>{copy.empty}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </>
   );
 }
