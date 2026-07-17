@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, Check, Search } from "lucide-react";
 import type { Locale } from "@/lib/locales";
-import { getDictionary } from "@/data/dictionaries";
+import {
+  formatGuideCount,
+  formatReadTime,
+  getDictionary,
+} from "@/data/dictionaries";
 import {
   platforms,
   publishedForPlatform,
@@ -182,7 +186,7 @@ export function HomePage({ locale }: { locale: Locale }) {
             placeholder={copy.search}
             empty={d.category.empty}
           />
-          <nav className="popular-row" aria-label="Example searches">
+          <nav className="popular-row" aria-label={d.common.exampleSearches}>
             {exampleIssues.map(({ label, issue }) =>
               issue ? (
                 <Link
@@ -217,7 +221,9 @@ export function HomePage({ locale }: { locale: Locale }) {
                       locale,
                     )}
                   </time>
-                  <span>{estimateReadTime(issue, locale)} min read</span>
+                  <span>
+                    {formatReadTime(estimateReadTime(issue, locale), locale)}
+                  </span>
                 </div>
               </Link>
             ))}
@@ -235,10 +241,10 @@ export function HomePage({ locale }: { locale: Locale }) {
               <Link key={platform.id} href={`/${locale}/${platform.slug}/`}>
                 <strong>{platform.name}</strong>
                 <span>
-                  {publishedForPlatform(platform.id).length}{" "}
-                  {publishedForPlatform(platform.id).length === 1
-                    ? copy.guide
-                    : copy.guides}
+                  {formatGuideCount(
+                    publishedForPlatform(platform.id).length,
+                    locale,
+                  )}
                 </span>
               </Link>
             ))}
@@ -304,14 +310,14 @@ export function PlatformPage({
       <Breadcrumbs locale={locale} items={[{ label: platform.name }]} />
       <section className="article-hero">
         <div className="container">
-          <p className="eyebrow">{platform.kind}</p>
+          <p className="eyebrow">{d.platformKind[platform.kind]}</p>
           <h1>
             {platform.name} {d.category.title}
           </h1>
           <p className="lede">
             {platform.description[locale]} {d.category.intro}
           </p>
-          <LanguageLinks segments={[platform.slug]} />
+          <LanguageLinks locale={locale} segments={[platform.slug]} />
         </div>
       </section>
       <section className="section">
@@ -399,21 +405,18 @@ export function ArticlePage({
         <header className="article-hero">
           <div className="container">
             <p className="eyebrow">
-              {platform.name} · {issue.intent}
+              {platform.name} · {d.intent[issue.intent]}
             </p>
             <h1>{c.title}</h1>
             <p className="lede">{c.intro}</p>
             <div className="article-meta">
               <LastReviewed locale={locale} date={issue.updatedAt} />
-              <span>
-                {locale === "en"
-                  ? "Editorial status: fact-checked"
-                  : locale === "ru"
-                    ? "Редакционный статус: проверено"
-                    : "Редакційний статус: перевірено"}
-              </span>
+              <span>{d.article.status}</span>
             </div>
-            <LanguageLinks segments={[platform.slug, issue.slug]} />
+            <LanguageLinks
+              locale={locale}
+              segments={[platform.slug, issue.slug]}
+            />
           </div>
         </header>
         <div className="container article-layout">
@@ -460,23 +463,10 @@ export function ArticlePage({
             </section>
             <SourceList locale={locale} sources={issue.sources} />
             <section id="faq">
-              <h2>
-                {locale === "en"
-                  ? "Common questions"
-                  : locale === "ru"
-                    ? "Частые вопросы"
-                    : "Поширені питання"}
-              </h2>
+              <h2>{d.article.commonQuestions}</h2>
               <FAQ items={c.faq} />
             </section>
             <Disclaimer locale={locale} />
-          </div>
-          <div className="article-cta-rail">
-            <CaseReviewCTA
-              locale={locale}
-              title={telegramCopy.title}
-              text={telegramCopy.text}
-            />
           </div>
         </div>
       </article>
@@ -589,21 +579,18 @@ function V4ArticlePage({
         <header className="article-hero">
           <div className="container">
             <p className="eyebrow">
-              {platform.name} · {issue.intent}
+              {platform.name} · {d.intent[issue.intent]}
             </p>
             <h1>{content.title}</h1>
             <p className="lede">{content.intro}</p>
             <div className="article-meta">
               <LastReviewed locale={locale} date={content.reviewedAt} />
-              <span>
-                {locale === "en"
-                  ? "Editorial status: fact-checked"
-                  : locale === "ru"
-                    ? "Редакционный статус: проверено"
-                    : "Редакційний статус: перевірено"}
-              </span>
+              <span>{d.article.status}</span>
             </div>
-            <LanguageLinks segments={[platform.slug, issue.slug]} />
+            <LanguageLinks
+              locale={locale}
+              segments={[platform.slug, issue.slug]}
+            />
           </div>
         </header>
         <div className="container article-layout">
@@ -644,13 +631,6 @@ function V4ArticlePage({
             ))}
             <SourceList locale={locale} sources={sources} />
             <Disclaimer locale={locale} />
-          </div>
-          <div className="article-cta-rail">
-            <CaseReviewCTA
-              locale={locale}
-              title={content.ctaTitle}
-              text={content.ctaText}
-            />
           </div>
         </div>
       </article>
@@ -775,10 +755,10 @@ export function HubPage({
       <Breadcrumbs locale={locale} items={[{ label: hub.title[locale] }]} />
       <section className="article-hero">
         <div className="container">
-          <p className="eyebrow">Knowledge hub</p>
+          <p className="eyebrow">{getDictionary(locale).common.knowledgeHub}</p>
           <h1>{hub.title[locale]}</h1>
           <p className="lede">{hub.description[locale]}</p>
-          <LanguageLinks segments={[hub.slug]} />
+          <LanguageLinks locale={locale} segments={[hub.slug]} />
         </div>
       </section>
       <section className="section">
@@ -898,11 +878,12 @@ export function LegalPage({
   slug: LegalSlug;
 }) {
   const [title, first, second] = legalCopy[slug][locale];
+  const d = getDictionary(locale);
   return (
     <main id="main">
       <Breadcrumbs locale={locale} items={[{ label: title }]} />
       <article className="legal-page narrow">
-        <p className="eyebrow">Last updated · 15 July 2026</p>
+        <p className="eyebrow">{d.common.lastUpdated}</p>
         <h1>{title}</h1>
         <section>
           <h2>
@@ -924,7 +905,7 @@ export function LegalPage({
           </h2>
           <p>{second}</p>
         </section>
-        <LanguageLinks segments={[slug]} />
+        <LanguageLinks locale={locale} segments={[slug]} />
       </article>
     </main>
   );

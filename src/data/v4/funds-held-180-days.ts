@@ -15,7 +15,7 @@ export const fundsHeld180DaysV4: V4LocalizedArticle = {
   en: {
     title:
       "PayPal funds held for up to 180 days: what the notice means and what to check next",
-    metaTitle: "PayPal Funds Held for 180 Days: What to Check",
+    metaTitle: "PayPal Funds Held for Up to 180 Days: What to Check",
     metaDescription:
       "See what a PayPal 180-day hold may mean, which account market and notice date matter, and what to check if the shown date has passed.",
     intro:
@@ -234,7 +234,7 @@ export const fundsHeld180DaysV4: V4LocalizedArticle = {
   ru: {
     title:
       "PayPal удерживает средства до 180 дней: как читать уведомление и что сверить",
-    metaTitle: "PayPal удерживает деньги 180 дней: что проверить",
+    metaTitle: "PayPal удерживает деньги до 180 дней: что проверить",
     metaDescription:
       "Разберитесь, что означает удержание PayPal на 180 дней, почему важны рынок аккаунта и дата в уведомлении и что проверить после этой даты.",
     intro:
@@ -448,7 +448,7 @@ export const fundsHeld180DaysV4: V4LocalizedArticle = {
   uk: {
     title:
       "PayPal утримує кошти до 180 днів: як зрозуміти повідомлення і що перевірити",
-    metaTitle: "PayPal утримує гроші 180 днів: що перевірити",
+    metaTitle: "PayPal утримує гроші до 180 днів: що перевірити",
     metaDescription:
       "Розберіться, що означає утримання PayPal на 180 днів, чому важливі ринок акаунта й дата в повідомленні та що перевірити далі.",
     intro:

@@ -7,6 +7,9 @@ const dictionaries = {
       guides: "Guides",
       review: "Case review",
       search: "Search",
+      mainLabel: "Main navigation",
+      mobileLabel: "Mobile navigation",
+      openMenu: "Open menu",
     },
     hero: {
       eyebrow: "Independent. Sources checked.",
@@ -40,6 +43,11 @@ const dictionaries = {
       sources: "Official sources",
       reviewed: "Sources checked",
       toc: "In this guide",
+      status: "Editorial status: fact-checked",
+      commonQuestions: "Common questions",
+      translations: "Translations",
+      telegramAction: "Ask in Telegram",
+      telegramPrivacy: "Never send a password or login code.",
     },
     category: {
       title: "help and account issue guides",
@@ -69,6 +77,54 @@ const dictionaries = {
       sensitive:
         "Redact document numbers and unrelated personal data. Never send a password or complete bank/card details.",
       official: "Independent from the platforms we cover",
+      home: "Home",
+      breadcrumb: "Breadcrumb",
+      exampleSearches: "Example searches",
+      knowledgeHub: "Knowledge hub",
+      lastUpdated: "Last updated · 15 July 2026",
+    },
+    footer: {
+      accountSuspensions: "Account suspensions",
+      verification: "Verification",
+      payoutHolds: "Payout holds",
+      appeals: "Appeals",
+      rssUpdates: "RSS / Updates",
+      privacy: "Privacy policy",
+      terms: "Terms of use",
+      cookies: "Cookie policy",
+      disclaimer: "Disclaimer",
+      contact: "Contact",
+    },
+    intent: {
+      informational: "Account issue",
+      appeal: "Appeal",
+      verification: "Verification",
+      payout: "Payout hold",
+    },
+    platformKind: {
+      marketplace: "Marketplace",
+      payment: "Payment platform",
+    },
+    readTime: {
+      one: "minute read",
+      few: "minutes read",
+      many: "minutes read",
+      other: "minutes read",
+    },
+    guideCount: {
+      one: "guide",
+      few: "guides",
+      many: "guides",
+      other: "guides",
+    },
+    notFound: {
+      title: "Page not found",
+      text: "The guide may still be under editorial review or the address is incorrect.",
+      action: "Choose a language",
+    },
+    feed: {
+      title: "Resolution Hub updates",
+      description: "Recently reviewed account issue guides",
     },
   },
   ru: {
@@ -77,6 +133,9 @@ const dictionaries = {
       guides: "Разборы",
       review: "Разбор ситуации",
       search: "Поиск",
+      mainLabel: "Основная навигация",
+      mobileLabel: "Мобильная навигация",
+      openMenu: "Открыть меню",
     },
     hero: {
       eyebrow: "Независимо. Источники проверены.",
@@ -110,6 +169,11 @@ const dictionaries = {
       sources: "Официальные источники",
       reviewed: "Источники проверены",
       toc: "В этом разборе",
+      status: "Редакционный статус: проверено",
+      commonQuestions: "Частые вопросы",
+      translations: "Другие языки",
+      telegramAction: "Спросить в Telegram",
+      telegramPrivacy: "Никогда не отправляйте пароль или код входа.",
     },
     category: {
       title: "помощь с аккаунтом",
@@ -139,6 +203,54 @@ const dictionaries = {
       sensitive:
         "Закрывайте номера документов и лишние персональные данные. Никогда не отправляйте пароль или полные банковские/карточные реквизиты.",
       official: "Независимо от упомянутых платформ",
+      home: "Главная",
+      breadcrumb: "Навигационная цепочка",
+      exampleSearches: "Примеры запросов",
+      knowledgeHub: "Тематический раздел",
+      lastUpdated: "Последнее обновление · 15 июля 2026",
+    },
+    footer: {
+      accountSuspensions: "Блокировки аккаунтов",
+      verification: "Проверки",
+      payoutHolds: "Задержки выплат",
+      appeals: "Апелляции",
+      rssUpdates: "RSS / Обновления",
+      privacy: "Политика конфиденциальности",
+      terms: "Условия использования",
+      cookies: "Политика cookie",
+      disclaimer: "Дисклеймер",
+      contact: "Контакты",
+    },
+    intent: {
+      informational: "Проблема аккаунта",
+      appeal: "Апелляция",
+      verification: "Проверка",
+      payout: "Задержка выплаты",
+    },
+    platformKind: {
+      marketplace: "Маркетплейс",
+      payment: "Платёжная платформа",
+    },
+    readTime: {
+      one: "минута чтения",
+      few: "минуты чтения",
+      many: "минут чтения",
+      other: "минуты чтения",
+    },
+    guideCount: {
+      one: "разбор",
+      few: "разбора",
+      many: "разборов",
+      other: "разбора",
+    },
+    notFound: {
+      title: "Страница не найдена",
+      text: "Материал может находиться на редакционной проверке, либо адрес указан неверно.",
+      action: "Выбрать язык",
+    },
+    feed: {
+      title: "Обновления Resolution Hub",
+      description: "Недавно проверенные материалы о проблемах аккаунтов",
     },
   },
   uk: {
@@ -147,6 +259,9 @@ const dictionaries = {
       guides: "Розбори",
       review: "Розбір ситуації",
       search: "Пошук",
+      mainLabel: "Основна навігація",
+      mobileLabel: "Мобільна навігація",
+      openMenu: "Відкрити меню",
     },
     hero: {
       eyebrow: "Незалежно. Джерела перевірено.",
@@ -180,6 +295,11 @@ const dictionaries = {
       sources: "Офіційні джерела",
       reviewed: "Джерела перевірено",
       toc: "У цьому розборі",
+      status: "Редакційний статус: перевірено",
+      commonQuestions: "Поширені запитання",
+      translations: "Інші мови",
+      telegramAction: "Запитати в Telegram",
+      telegramPrivacy: "Ніколи не надсилайте пароль або код входу.",
     },
     category: {
       title: "допомога з акаунтом",
@@ -209,11 +329,74 @@ const dictionaries = {
       sensitive:
         "Закривайте номери документів і зайві персональні дані. Ніколи не надсилайте пароль або повні банківські/карткові реквізити.",
       official: "Незалежно від згаданих платформ",
+      home: "Головна",
+      breadcrumb: "Навігаційний ланцюжок",
+      exampleSearches: "Приклади запитів",
+      knowledgeHub: "Тематичний розділ",
+      lastUpdated: "Останнє оновлення · 15 липня 2026",
+    },
+    footer: {
+      accountSuspensions: "Блокування акаунтів",
+      verification: "Перевірки",
+      payoutHolds: "Затримки виплат",
+      appeals: "Апеляції",
+      rssUpdates: "RSS / Оновлення",
+      privacy: "Політика конфіденційності",
+      terms: "Умови використання",
+      cookies: "Політика cookie",
+      disclaimer: "Дисклеймер",
+      contact: "Контакти",
+    },
+    intent: {
+      informational: "Проблема акаунта",
+      appeal: "Апеляція",
+      verification: "Перевірка",
+      payout: "Затримка виплати",
+    },
+    platformKind: {
+      marketplace: "Маркетплейс",
+      payment: "Платіжна платформа",
+    },
+    readTime: {
+      one: "хвилина читання",
+      few: "хвилини читання",
+      many: "хвилин читання",
+      other: "хвилини читання",
+    },
+    guideCount: {
+      one: "розбір",
+      few: "розбори",
+      many: "розборів",
+      other: "розбору",
+    },
+    notFound: {
+      title: "Сторінку не знайдено",
+      text: "Матеріал може проходити редакційну перевірку, або адресу вказано неправильно.",
+      action: "Обрати мову",
+    },
+    feed: {
+      title: "Оновлення Resolution Hub",
+      description: "Нещодавно перевірені матеріали про проблеми акаунтів",
     },
   },
 } as const;
 
 export function getDictionary(locale: Locale) {
   return dictionaries[locale];
+}
+
+function pluralForm(value: number, locale: Locale) {
+  return new Intl.PluralRules(locale).select(value) as
+    "one" | "few" | "many" | "other";
+}
+
+export function formatReadTime(minutes: number, locale: Locale) {
+  const forms = getDictionary(locale).readTime;
+  return `${minutes} ${forms[pluralForm(minutes, locale)]}`;
+}
+
+export function formatGuideCount(count: number, locale: Locale) {
+  const forms = getDictionary(locale).guideCount;
+  return `${count} ${forms[pluralForm(count, locale)]}`;
 }
 export type Dictionary = (typeof dictionaries)["en"];

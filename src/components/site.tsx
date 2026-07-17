@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import type { Locale } from "@/lib/locales";
 import { localeNames, locales } from "@/lib/locales";
-import { getDictionary } from "@/data/dictionaries";
+import { formatGuideCount, getDictionary } from "@/data/dictionaries";
 import type {
   ContentSection,
   IssuePage,
@@ -34,7 +34,7 @@ export function Header({ locale }: { locale: Locale }) {
         <Link className="brand" href={`/${locale}/`}>
           <span>{siteConfig.name}</span>
         </Link>
-        <nav className="desktop-nav" aria-label="Main navigation">
+        <nav className="desktop-nav" aria-label={d.nav.mainLabel}>
           <Link className="nav-link" href={`/${locale}/#platforms`}>
             {d.nav.platforms}
           </Link>
@@ -61,10 +61,10 @@ export function Header({ locale }: { locale: Locale }) {
             <Search size={19} aria-hidden="true" />
           </Link>
           <details className="mobile-menu">
-            <summary className="icon-button" aria-label="Open menu">
+            <summary className="icon-button" aria-label={d.nav.openMenu}>
               <Menu size={20} aria-hidden="true" />
             </summary>
-            <nav aria-label="Mobile navigation">
+            <nav aria-label={d.nav.mobileLabel}>
               <Link href={`/${locale}/#platforms`}>{d.nav.platforms}</Link>
               <Link href={`/${locale}/account-suspensions/`}>
                 {d.nav.guides}
@@ -82,30 +82,7 @@ export function Header({ locale }: { locale: Locale }) {
 
 export function Footer({ locale }: { locale: Locale }) {
   const d = getDictionary(locale);
-  const links =
-    locale === "en"
-      ? {
-          privacy: "Privacy policy",
-          terms: "Terms of use",
-          cookies: "Cookie policy",
-          disclaimer: "Disclaimer",
-          contact: "Contact",
-        }
-      : locale === "ru"
-        ? {
-            privacy: "Политика конфиденциальности",
-            terms: "Условия использования",
-            cookies: "Политика cookie",
-            disclaimer: "Дисклеймер",
-            contact: "Контакты",
-          }
-        : {
-            privacy: "Політика конфіденційності",
-            terms: "Умови використання",
-            cookies: "Політика cookie",
-            disclaimer: "Дисклеймер",
-            contact: "Контакти",
-          };
+  const links = d.footer;
   return (
     <footer className="footer">
       <div className="container">
@@ -122,12 +99,14 @@ export function Footer({ locale }: { locale: Locale }) {
             <h3>{d.nav.guides}</h3>
             <div className="footer-links">
               <Link href={`/${locale}/account-suspensions/`}>
-                Account suspensions
+                {links.accountSuspensions}
               </Link>
-              <Link href={`/${locale}/verification/`}>Verification</Link>
-              <Link href={`/${locale}/payout-holds/`}>Payout holds</Link>
-              <Link href={`/${locale}/appeals/`}>Appeals</Link>
-              <Link href={`/${locale}/updates.xml`}>RSS / Updates</Link>
+              <Link href={`/${locale}/verification/`}>
+                {links.verification}
+              </Link>
+              <Link href={`/${locale}/payout-holds/`}>{links.payoutHolds}</Link>
+              <Link href={`/${locale}/appeals/`}>{links.appeals}</Link>
+              <Link href={`/${locale}/updates.xml`}>{links.rssUpdates}</Link>
             </div>
           </div>
           <div>
@@ -169,15 +148,7 @@ export function PlatformCard({
       </span>
       <h3>{platform.name}</h3>
       <p>{platform.description[locale]}</p>
-      <span className="count">
-        {count}{" "}
-        {locale === "en"
-          ? "reviewed guides"
-          : locale === "ru"
-            ? "проверенных материалов"
-            : "перевірених матеріалів"}{" "}
-        →
-      </span>
+      <span className="count">{formatGuideCount(count, locale)} →</span>
     </Link>
   );
 }
@@ -196,7 +167,7 @@ export function IssueCard({
       href={`/${locale}/${issue.platformId}/${issue.slug}/`}
     >
       <span className="meta">
-        <BookOpen size={14} /> {issue.intent}
+        <BookOpen size={14} /> {d.intent[issue.intent]}
       </span>
       <h3>{issue.content[locale].title}</h3>
       <span className="link-label">
@@ -213,13 +184,12 @@ export function Breadcrumbs({
   locale: Locale;
   items: { label: string; href?: string }[];
 }) {
+  const d = getDictionary(locale);
   return (
-    <nav className="breadcrumbs container" aria-label="Breadcrumb">
+    <nav className="breadcrumbs container" aria-label={d.common.breadcrumb}>
       <ol>
         <li>
-          <Link href={`/${locale}/`}>
-            {locale === "en" ? "Home" : locale === "ru" ? "Главная" : "Головна"}
-          </Link>
+          <Link href={`/${locale}/`}>{d.common.home}</Link>
         </li>
         {items.map((item, index) => (
           <li key={`${item.label}-${index}`}>
@@ -313,18 +283,7 @@ export function CaseReviewCTA({
   title: string;
   text: string;
 }) {
-  const action =
-    locale === "en"
-      ? "Ask in Telegram"
-      : locale === "ru"
-        ? "Спросить в Telegram"
-        : "Запитати в Telegram";
-  const privacy =
-    locale === "en"
-      ? "Never send a password or login code."
-      : locale === "ru"
-        ? "Никогда не отправляйте пароль или код входа."
-        : "Ніколи не надсилайте пароль або код входу.";
+  const article = getDictionary(locale).article;
   return (
     <aside className="cta">
       <h2>{title}</h2>
@@ -336,11 +295,11 @@ export function CaseReviewCTA({
           href={siteConfig.telegram}
           rel="noopener noreferrer"
         >
-          {action}
+          {article.telegramAction}
           <ArrowRight size={17} />
         </a>
       </div>
-      <small>{privacy}</small>
+      <small>{article.telegramPrivacy}</small>
     </aside>
   );
 }
@@ -371,14 +330,7 @@ export function TableOfContents({
     ["steps", a.steps],
     ["mistakes", a.mistakes],
     ["official-sources", a.sources],
-    [
-      "faq",
-      locale === "en"
-        ? "Common questions"
-        : locale === "ru"
-          ? "Частые вопросы"
-          : "Поширені питання",
-    ],
+    ["faq", a.commonQuestions],
   ] as string[][];
   return (
     <aside className="toc">
@@ -550,16 +502,25 @@ export function TrustPanel({ locale }: { locale: Locale }) {
   );
 }
 
-export function LanguageLinks({ segments }: { segments: string[] }) {
+export function LanguageLinks({
+  locale,
+  segments,
+}: {
+  locale: Locale;
+  segments: string[];
+}) {
   return (
-    <nav aria-label="Translations" className="contact-strip">
-      {locales.map((locale) => (
+    <nav
+      aria-label={getDictionary(locale).article.translations}
+      className="contact-strip"
+    >
+      {locales.map((targetLocale) => (
         <Link
           className="button secondary"
-          key={locale}
-          href={`/${locale}/${segments.join("/")}${segments.length ? "/" : ""}`}
+          key={targetLocale}
+          href={`/${targetLocale}/${segments.join("/")}${segments.length ? "/" : ""}`}
         >
-          {localeNames[locale]}
+          {localeNames[targetLocale]}
         </Link>
       ))}
     </nav>

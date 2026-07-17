@@ -1244,10 +1244,6 @@ h3 {
   font-size: 0.75rem;
 }
 
-.article-cta-rail {
-  display: none;
-}
-
 .article-cta-inline {
   display: block;
 }
@@ -1483,24 +1479,6 @@ h3 {
 .safety-box.warning {
   border-color: color-mix(in srgb, var(--warning) 42%, var(--line));
   background: var(--warning-soft);
-}
-
-@media (min-width: 1440px) {
-  .article-layout {
-    grid-template-columns: 200px minmax(0, 760px) 240px;
-    gap: 40px;
-  }
-
-  .article-cta-rail {
-    display: block;
-    position: sticky;
-    top: 92px;
-    align-self: start;
-  }
-
-  .article-cta-inline {
-    display: none;
-  }
 }
 
 @media (max-width: 1023px) {

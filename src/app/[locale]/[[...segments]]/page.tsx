@@ -4,6 +4,7 @@ import { isLocale, type Locale } from "@/lib/locales";
 import { createMetadata } from "@/lib/metadata";
 import {
   issueByRoute,
+  isPublicationEligibleIssue,
   platformBySlug,
   platforms,
   publishedIssues,
@@ -32,7 +33,9 @@ const legalSlugs = [
   "contact",
 ] as const;
 
-export const dynamicParams = false;
+// Keep known locales dynamic so unpublished and unknown child routes reach the
+// localized not-found boundary while still returning a real 404 response.
+export const dynamicParams = true;
 export function generateStaticParams() {
   return [
     { segments: [] },
@@ -91,7 +94,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   if (segments.length === 2) {
     const issue = issueByRoute(segments[0]!, segments[1]!);
-    if (issue && issue.status === "published" && !issue.needsFactCheck) {
+    if (isPublicationEligibleIssue(issue)) {
       const content = getV4Article(issue.id, locale) ?? issue.content[locale];
       const modifiedTime =
         "reviewedAt" in content ? content.reviewedAt : issue.updatedAt;
@@ -133,12 +136,7 @@ export default async function CatchAllPage({ params }: Props) {
   if (segments.length === 2) {
     const platform = platformBySlug(segments[0]!);
     const issue = issueByRoute(segments[0]!, segments[1]!);
-    if (
-      platform &&
-      issue &&
-      issue.status === "published" &&
-      !issue.needsFactCheck
-    )
+    if (platform && isPublicationEligibleIssue(issue))
       return (
         <>
           <JsonLd data={articleJsonLd(locale, issue, platform)} />

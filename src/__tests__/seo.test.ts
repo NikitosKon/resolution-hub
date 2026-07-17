@@ -5,6 +5,7 @@ import { languageAlternates, pathFor } from "@/lib/urls";
 import { locales } from "@/lib/locales";
 import { publishedIssues } from "@/data";
 import { sitemapXml } from "@/lib/xml";
+import { GET as getUpdatesFeed } from "@/app/[locale]/updates.xml/route";
 
 test("URL generator uses clean trailing slashes", () => {
   assert.equal(
@@ -37,11 +38,23 @@ test("draft pages stay out of the issue sitemap", () => {
       lastmod: issue.updatedAt,
     })),
   );
-  assert.equal(
-    (xml.match(/<url>/g) || []).length,
-    publishedIssues.length * locales.length,
-  );
+  assert.equal((xml.match(/<url>/g) || []).length, 9);
   assert.ok(!xml.includes("paypal/account-restricted"));
+  assert.ok(!xml.includes("paypal/permanently-limited"));
+});
+test("RSS contains only the controlled release", async () => {
+  const response = await getUpdatesFeed(
+    new Request("https://resolutionhub.net/en/updates.xml"),
+    {
+      params: Promise.resolve({ locale: "en" }),
+    },
+  );
+  const xml = await response.text();
+  assert.equal((xml.match(/<item>/g) || []).length, 3);
+  for (const issue of publishedIssues)
+    assert.ok(xml.includes(`/${issue.platformId}/${issue.slug}/`));
+  assert.ok(!xml.includes("paypal/permanently-limited"));
+  assert.ok(!xml.includes("ebay/mc011-restriction"));
 });
 test("sitemap uses stored lastmod values", () => {
   const xml = sitemapXml([{ segments: ["paypal"], lastmod: "2026-07-15" }]);

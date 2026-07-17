@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
 }
-export const dynamicParams = false;
+export const dynamicParams = true;
 
 export default async function LocaleLayout({
   children,

@@ -69,7 +69,7 @@ export const frozenAfterSaleV4: V4LocalizedArticle = {
       },
       {
         id: "four-states",
-        title: "Check four separate states",
+        title: "Separate the account, order, payout, and cash-out states",
         blocks: [
           {
             type: "table",
@@ -265,7 +265,7 @@ export const frozenAfterSaleV4: V4LocalizedArticle = {
       },
       {
         id: "four-states",
-        title: "Проверьте четыре разных статуса",
+        title: "Разделите статусы аккаунта, заказа, выплаты и вывода",
         blocks: [
           {
             type: "table",
@@ -449,7 +449,7 @@ export const frozenAfterSaleV4: V4LocalizedArticle = {
       },
       {
         id: "four-states",
-        title: "Перевірте чотири окремі стани",
+        title: "Розділіть стани акаунта, замовлення, виплати й виведення",
         blocks: [
           {
             type: "table",

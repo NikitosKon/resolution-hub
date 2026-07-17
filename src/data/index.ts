@@ -1,12 +1,13 @@
 import { issuePageSchema, platformSchema, type IssuePage } from "./schema";
 import { issues as rawIssues } from "./issues";
 import { platforms as rawPlatforms } from "./platforms";
+import { isPublicationEligibleIssue } from "./release";
+
+export { currentRelease, isPublicationEligibleIssue } from "./release";
 
 export const platforms = platformSchema.array().parse(rawPlatforms);
 export const issues = issuePageSchema.array().parse(rawIssues);
-export const publishedIssues = issues.filter(
-  (issue) => issue.status === "published" && !issue.needsFactCheck,
-);
+export const publishedIssues = issues.filter(isPublicationEligibleIssue);
 
 export function validateContent() {
   const errors: string[] = [];

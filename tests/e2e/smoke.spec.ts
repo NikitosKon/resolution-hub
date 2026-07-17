@@ -13,28 +13,96 @@ test("language picker and localized home render", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("published article renders and an unknown route is 404", async ({
+test("published pilot renders and unreleased routes are 404", async ({
   page,
 }) => {
-  await page.goto("/en/paypal/permanently-limited/");
+  await page.goto("/en/paypal/funds-held-180-days/");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("PayPal");
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
     "href",
-    /\/en\/paypal\/permanently-limited\/$/,
+    /\/en\/paypal\/funds-held-180-days\/$/,
   );
+  await expect(page.locator('link[hreflang="ru"]')).toHaveAttribute(
+    "href",
+    /\/ru\/paypal\/funds-held-180-days\/$/,
+  );
+  const unreleased = await page.goto("/en/paypal/permanently-limited/");
+  expect(unreleased?.status()).toBe(404);
   const response = await page.goto("/en/paypal/not-a-real-guide/");
   expect(response?.status()).toBe(404);
 });
 
-test("consultation CTA goes directly to Telegram", async ({ page }) => {
-  await page.goto("/en/paypal/funds-held-180-days/");
-  const telegram = page.getByRole("link", { name: "Ask in Telegram" });
-  await expect(telegram.first()).toHaveAttribute(
-    "href",
-    "https://t.me/helpgrailed",
-  );
+test("all nine pilot routes render one direct Telegram CTA", async ({
+  page,
+}) => {
+  const routes = [
+    "paypal/funds-held-180-days",
+    "ebay/mc011-documents-requested",
+    "grailed/frozen-after-sale",
+  ];
+  for (const locale of ["en", "ru", "uk"])
+    for (const route of routes) {
+      const response = await page.goto(`/${locale}/${route}/`);
+      expect(response?.status()).toBe(200);
+      const cta = page.locator('.cta a[href="https://t.me/helpgrailed"]');
+      await expect(cta).toHaveCount(1);
+      await expect(cta).toHaveAttribute("rel", "noopener noreferrer");
+    }
   const removedForm = await page.goto("/en/case-review/");
   expect(removedForm?.status()).toBe(404);
+});
+
+test("Russian and Ukrainian public UI has no known English label leakage", async ({
+  page,
+}) => {
+  const expected = {
+    ru: {
+      nav: "Основная навигация",
+      translations: "Другие языки",
+      readTime: /\d+ (минута|минуты|минут) чтения/,
+    },
+    uk: {
+      nav: "Основна навігація",
+      translations: "Інші мови",
+      readTime: /\d+ (хвилина|хвилини|хвилин) читання/,
+    },
+  } as const;
+  const banned = [
+    "Account suspensions",
+    "Verification",
+    "Payout holds",
+    "Appeals",
+    "RSS / Updates",
+    "Knowledge hub",
+    "min read",
+  ];
+
+  for (const locale of ["ru", "uk"] as const) {
+    await page.goto(`/${locale}/`);
+    const homeText = await page.locator("body").innerText();
+    for (const label of banned) expect(homeText).not.toContain(label);
+    expect(homeText).toMatch(expected[locale].readTime);
+    await expect(page.locator("header nav.desktop-nav")).toHaveAttribute(
+      "aria-label",
+      expected[locale].nav,
+    );
+
+    await page.goto(`/${locale}/paypal/funds-held-180-days/`);
+    const articleText = await page.locator("body").innerText();
+    for (const label of banned) expect(articleText).not.toContain(label);
+    await expect(page.locator("nav.contact-strip")).toHaveAttribute(
+      "aria-label",
+      expected[locale].translations,
+    );
+
+    const unreleased = await page.goto(
+      `/${locale}/paypal/permanently-limited/`,
+    );
+    expect(unreleased?.status()).toBe(404);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+      locale === "ru" ? "Страница не найдена" : "Сторінку не знайдено",
+    );
+  }
 });
 
 test("mobile layout has no horizontal overflow", async ({ page }) => {
