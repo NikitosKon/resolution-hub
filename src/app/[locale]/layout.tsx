@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   title: { default: siteConfig.name, template: `%s | ${siteConfig.name}` },
   applicationName: siteConfig.name,
   formatDetection: { email: false, address: false, telephone: false },
+  verification: {
+    google: siteConfig.googleSiteVerification,
+  },
 };
 
 export function generateStaticParams() {

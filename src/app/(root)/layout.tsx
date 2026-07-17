@@ -32,6 +32,9 @@ export const metadata: Metadata = {
     description:
       "Choose English, Russian or Ukrainian for independent guidance about account restrictions, verification and payout holds.",
   },
+  verification: {
+    google: siteConfig.googleSiteVerification,
+  },
 };
 
 export default function RootLandingLayout({

@@ -6,6 +6,7 @@ import { locales } from "@/lib/locales";
 import { publishedIssues } from "@/data";
 import { sitemapXml } from "@/lib/xml";
 import { GET as getUpdatesFeed } from "@/app/[locale]/updates.xml/route";
+import { siteConfig } from "@/lib/config";
 
 test("URL generator uses clean trailing slashes", () => {
   assert.equal(
@@ -30,6 +31,12 @@ test("metadata has self canonical and all hreflang values", () => {
     ...locales,
     "x-default",
   ]);
+});
+test("production configuration includes Google site verification", () => {
+  assert.equal(
+    siteConfig.googleSiteVerification,
+    "EHxggE9ENAwY5nP_j56kUtT7wa0E5bzLBarM0KWnAcM",
+  );
 });
 test("draft pages stay out of the issue sitemap", () => {
   const xml = sitemapXml(
