@@ -36,6 +36,7 @@ import { getV4Article } from "@/data/v4";
 import type { V4ArticleBlock, V4ArticleContent } from "@/data/v4/types";
 import { ArticleVisual } from "./article-visuals";
 import type { ArticleDraft } from "@/lib/article-draft";
+import { listPublishedDrafts } from "@/lib/published-drafts";
 
 function estimateReadTime(issue: IssuePage, locale: Locale) {
   const words = JSON.stringify(issue.content[locale])
@@ -52,7 +53,12 @@ function formatCompactDate(date: string, locale: Locale) {
   }).format(new Date(`${date}T12:00:00Z`));
 }
 
-export function HomePage({ locale }: { locale: Locale }) {
+function draftPlatformSlug(platform: string) {
+  return platform.toLocaleLowerCase("en").replace(/[^a-z0-9]+/g, "-");
+}
+
+export async function HomePage({ locale }: { locale: Locale }) {
+  const publishedDrafts = await listPublishedDrafts();
   const d = getDictionary(locale);
   const preferred = [
     ["paypal", "permanently-limited"],
@@ -69,6 +75,7 @@ export function HomePage({ locale }: { locale: Locale }) {
   const latest = publishedIssues
     .filter((issue) => !top.some((item) => item.id === issue.id))
     .slice(0, 4);
+  const latestDrafts = publishedDrafts.slice(0, 4);
   const copy =
     locale === "en"
       ? {
@@ -243,7 +250,7 @@ export function HomePage({ locale }: { locale: Locale }) {
                 <strong>{platform.name}</strong>
                 <span>
                   {formatGuideCount(
-                    publishedForPlatform(platform.id).length,
+                    publishedForPlatform(platform.id).length + publishedDrafts.filter((item) => draftPlatformSlug(item.draft.platform) === platform.id).length,
                     locale,
                   )}
                 </span>
@@ -271,6 +278,18 @@ export function HomePage({ locale }: { locale: Locale }) {
                 <ArrowRight size={18} />
               </Link>
             ))}
+            {latestDrafts.map((item) => {
+              const platform = platforms.find((candidate) => candidate.id === draftPlatformSlug(item.draft.platform));
+              if (!platform) return null;
+              const title = item.draft.translations?.[locale]?.title || item.draft.title;
+              return (
+                <Link key={`draft-${item.slug}`} href={`/${locale}/${platform.slug}/${item.slug}/`}>
+                  <span>{platform.name}</span>
+                  <h3>{title}</h3>
+                  <ArrowRight size={18} />
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -297,7 +316,7 @@ export function HomePage({ locale }: { locale: Locale }) {
   );
 }
 
-export function PlatformPage({
+export async function PlatformPage({
   locale,
   platform,
 }: {
@@ -306,6 +325,7 @@ export function PlatformPage({
 }) {
   const d = getDictionary(locale);
   const list = publishedForPlatform(platform.id);
+  const publishedDrafts = (await listPublishedDrafts()).filter((item) => draftPlatformSlug(item.draft.platform) === platform.id);
   return (
     <main id="main">
       <Breadcrumbs locale={locale} items={[{ label: platform.name }]} />
@@ -330,6 +350,17 @@ export function PlatformPage({
             placeholder={`${d.category.search}: ${platform.name}`}
             empty={d.category.empty}
           />
+          {publishedDrafts.length ? (
+            <div className="latest-list" aria-label="Published draft guides">
+              {publishedDrafts.map((item) => (
+                <Link key={item.slug} href={`/${locale}/${platform.slug}/${item.slug}/`}>
+                  <span>{platform.name}</span>
+                  <h3>{item.draft.translations?.[locale]?.title || item.draft.title}</h3>
+                  <ArrowRight size={18} />
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </div>
       </section>
       <section className="section tint">
