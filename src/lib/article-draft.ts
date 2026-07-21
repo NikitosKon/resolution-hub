@@ -7,6 +7,7 @@ export type DraftTemplateId =
 export type DraftSection = {
   heading: string;
   body: string;
+  factChecked?: boolean;
 };
 
 export type DraftTable = {
@@ -82,6 +83,14 @@ export function validateDraft(draft: ArticleDraft): DraftCheck[] {
       detail: draft.sections.every((section) => section.body.trim())
         ? "Every section has text."
         : "Fill every section or remove it from the template.",
+    },
+    {
+      label: "Section fact review",
+      ok: draft.sections.length > 0 && draft.sections.every((section) => section.factChecked === true),
+      detail:
+        draft.sections.length > 0 && draft.sections.every((section) => section.factChecked === true)
+          ? "Every section is marked as checked against an official source."
+          : "Check every section against an official source before approval.",
     },
     {
       label: "Official sources",
@@ -160,7 +169,7 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
     title: "",
     summary: "",
     quickAnswer: "",
-    sections: template.sections.map((heading) => ({ heading, body: "" })),
+    sections: template.sections.map((heading) => ({ heading, body: "", factChecked: false })),
     tables: [],
     visualBlocks: [],
     warnings: "",
@@ -184,7 +193,7 @@ export function draftToMarkdown(
   status: "draft" | "review" | "approved" | "published" = "draft",
 ) {
   const sections = draft.sections
-    .map((section) => `## ${section.heading}\n\n${section.body || "[Draft]"}`)
+    .map((section) => `## ${section.heading}\n\n${section.body || "[Draft]"}\n\nFact checked: ${section.factChecked ? "yes" : "no"}`)
     .join("\n\n");
   const faq = draft.faq
     .map((item) => `### ${item.heading}\n\n${item.body || "[Draft]"}`)

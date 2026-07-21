@@ -119,6 +119,7 @@ export function ArticleDraftEditor() {
   const [operationTone, setOperationTone] = useState<"info" | "success" | "error">("info");
   const [ideas, setIdeas] = useState<ArticleIdea[]>([]);
   const [ideasError, setIdeasError] = useState("");
+  const [reviewConfirmed, setReviewConfirmed] = useState({ claims: false, sources: false, read: false });
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
   const wordCount = useMemo(
     () => markdown.split(/\s+/).filter(Boolean).length,
@@ -132,6 +133,7 @@ export function ArticleDraftEditor() {
     }
     return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ru"));
   }, [ideas]);
+  const reviewReady = reviewConfirmed.claims && reviewConfirmed.sources && reviewConfirmed.read;
 
   useEffect(() => {
     let cancelled = false;
@@ -163,6 +165,7 @@ export function ArticleDraftEditor() {
         if (requested) {
           setDraft(requested.draft as ArticleDraft);
           setStatus((requested.status as ArticleStatus) || "draft");
+          setReviewConfirmed({ claims: false, sources: false, read: false });
         }
         const { data: ideaData, error: ideaError } = await supabase
           .from("article_ideas")
@@ -234,6 +237,7 @@ export function ArticleDraftEditor() {
           requestAnimationFrame(() => {
             setDraft(requested.draft);
             setStatus(requested.status || "draft");
+            setReviewConfirmed({ claims: false, sources: false, read: false });
           });
         }
       } catch {
@@ -488,6 +492,15 @@ export function ArticleDraftEditor() {
       setPublishMessage("");
       return;
     }
+    if (status !== "approved" || !reviewReady) {
+      const reviewMessage = status !== "approved"
+        ? "Перед публикацией переведи статус в Approved после ручной проверки."
+        : "Подтверди проверку каждого утверждения, источников и итогового текста.";
+      setGroqError(reviewMessage);
+      setOperationTone("error");
+      setOperationMessage(reviewMessage);
+      return;
+    }
     setGroqError("");
     setPublishBusy(true);
     setPublishMessage("Публикую статью…");
@@ -567,6 +580,7 @@ export function ArticleDraftEditor() {
         translations: { ...current.translations, ...(generated.translations || {}) },
       }));
       setStatus("draft");
+      setReviewConfirmed({ claims: false, sources: false, read: false });
       setOperationTone("success");
       setOperationMessage("Черновик готов. Проверь факты, официальные источники и язык перед публикацией.");
     } catch (error) {
@@ -590,6 +604,7 @@ export function ArticleDraftEditor() {
       summary: current.summary,
     }));
     setStatus("draft");
+    setReviewConfirmed({ claims: false, sources: false, read: false });
   }
 
   const checks = validateDraft(draft);
@@ -757,6 +772,12 @@ export function ArticleDraftEditor() {
                 </li>
               ))}
             </ul>
+            <div className="admin-review-checklist">
+              <p className="admin-muted">Перед публикацией:</p>
+              <label><input type="checkbox" checked={reviewConfirmed.claims} onChange={(event) => setReviewConfirmed((current) => ({ ...current, claims: event.target.checked }))} /> Я проверил утверждения в каждой секции по официальным источникам</label>
+              <label><input type="checkbox" checked={reviewConfirmed.sources} onChange={(event) => setReviewConfirmed((current) => ({ ...current, sources: event.target.checked }))} /> Я открыл источники и убедился, что они актуальны</label>
+              <label><input type="checkbox" checked={reviewConfirmed.read} onChange={(event) => setReviewConfirmed((current) => ({ ...current, read: event.target.checked }))} /> Я прочитал итоговый текст и проверил, что Groq не добавил неподтверждённые обещания</label>
+            </div>
           </section>
 
           <section className="admin-card">
@@ -778,6 +799,7 @@ export function ArticleDraftEditor() {
                       onClick={() => {
                         setDraft(item.draft);
                         setStatus(item.status || "draft");
+                        setReviewConfirmed({ claims: false, sources: false, read: false });
                       }}
                     >
                       <strong>{item.title}</strong>
@@ -973,6 +995,17 @@ export function ArticleDraftEditor() {
                         )
                       }
                     />
+                    <label className="admin-fact-check">
+                      <input
+                        type="checkbox"
+                        checked={section.factChecked === true}
+                        onChange={(event) => setDraft((current) => ({
+                          ...current,
+                          sections: current.sections.map((item, itemIndex) => itemIndex === index ? { ...item, factChecked: event.target.checked } : item),
+                        }))}
+                      />
+                      Утверждения секции проверены по официальному источнику
+                    </label>
                   </div>
                 ))}
               </div>

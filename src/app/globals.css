@@ -1924,6 +1924,35 @@ h3 {
   font-size: 0.76rem;
 }
 
+.admin-review-checklist {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.admin-review-checklist p {
+  margin: 0;
+}
+
+.admin-review-checklist label,
+.admin-fact-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.admin-review-checklist input,
+.admin-fact-check input {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  accent-color: var(--accent-strong);
+}
+
 .admin-library-item {
   display: flex;
   align-items: center;
