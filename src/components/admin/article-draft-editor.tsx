@@ -20,6 +20,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 const storageKey = "resolution-hub.article-draft";
 const libraryKey = "resolution-hub.article-drafts";
 const ideasKey = "resolution-hub.article-ideas";
+const archiveKey = "resolution-hub.article-ideas-archive";
 
 type SavedDraft = {
   id: string;
@@ -125,6 +126,7 @@ export function ArticleDraftEditor() {
   const [operationMessage, setOperationMessage] = useState("");
   const [operationTone, setOperationTone] = useState<"info" | "success" | "error">("info");
   const [ideas, setIdeas] = useState<ArticleIdea[]>([]);
+  const [archivedIdeas, setArchivedIdeas] = useState<ArticleIdea[]>([]);
   const [ideasError, setIdeasError] = useState("");
   const [reviewConfirmed, setReviewConfirmed] = useState({ claims: false, sources: false, read: false });
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
@@ -140,6 +142,11 @@ export function ArticleDraftEditor() {
     }
     return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ru"));
   }, [ideas]);
+  const archivedIdeasByPlatform = useMemo(() => {
+    const groups = new Map<string, ArticleIdea[]>();
+    for (const idea of archivedIdeas) groups.set(idea.platform || "Other", [...(groups.get(idea.platform || "Other") ?? []), idea]);
+    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ru"));
+  }, [archivedIdeas]);
   const reviewReady = reviewConfirmed.claims && reviewConfirmed.sources && reviewConfirmed.read;
 
   useEffect(() => {
@@ -194,6 +201,7 @@ export function ArticleDraftEditor() {
           sourceCheckedAt: (item.source_checked_at as string) || "",
         }));
         const cloudIdeas = allCloudIdeas.filter((idea) => idea.status === "new" || idea.status === "planned");
+        setArchivedIdeas(allCloudIdeas.filter((idea) => idea.status === "used" || idea.status === "archived"));
         const existingTitles = new Set(allCloudIdeas.map((idea) => idea.title));
         const missingIdeas = starterArticleIdeas
           .filter((idea) => !existingTitles.has(idea.title))
@@ -230,6 +238,7 @@ export function ArticleDraftEditor() {
     const saved = localStorage.getItem(storageKey);
     const library = localStorage.getItem(libraryKey);
     const savedIdeas = localStorage.getItem(ideasKey);
+    const savedArchive = localStorage.getItem(archiveKey);
     let libraryFrame = 0;
     if (library) {
       try {
@@ -257,6 +266,14 @@ export function ArticleDraftEditor() {
         requestAnimationFrame(() => setIdeas(parsedIdeas));
       } catch {
         localStorage.removeItem(ideasKey);
+      }
+    }
+    if (savedArchive) {
+      try {
+        const parsedArchive = JSON.parse(savedArchive) as ArticleIdea[];
+        requestAnimationFrame(() => setArchivedIdeas(parsedArchive));
+      } catch {
+        localStorage.removeItem(archiveKey);
       }
     }
     if (!saved) return;
@@ -346,15 +363,18 @@ export function ArticleDraftEditor() {
       slug: slugify(idea.title),
     }));
     const remainingIdeas = ideas.filter((item) => item.id !== idea.id);
+    const archivedIdea = { ...idea, status: "archived" as const };
     setIdeas(remainingIdeas);
+    setArchivedIdeas((current) => [archivedIdea, ...current.filter((item) => item.title !== idea.title)]);
     localStorage.setItem(ideasKey, JSON.stringify(remainingIdeas));
+    localStorage.setItem(archiveKey, JSON.stringify([archivedIdea, ...archivedIdeas.filter((item) => item.title !== idea.title)]));
     try {
       const supabase = createSupabaseBrowserClient();
       const { data: userData } = await supabase.auth.getUser();
       if (userData.user) {
         const { error } = await supabase
           .from("article_ideas")
-          .update({ status: "used", updated_at: new Date().toISOString() })
+          .update({ status: "archived", updated_at: new Date().toISOString() })
           .eq("owner_id", userData.user.id)
           .eq("title", idea.title);
         if (error) throw error;
@@ -363,6 +383,24 @@ export function ArticleDraftEditor() {
       setIdeasError("Идея убрана из списка локально, но статус в Cloud library не обновился.");
     }
     setStatus("draft");
+  }
+
+  async function restoreIdea(idea: ArticleIdea) {
+    const restored = { ...idea, status: "new" as const };
+    setArchivedIdeas((current) => current.filter((item) => item.title !== idea.title));
+    setIdeas((current) => [restored, ...current.filter((item) => item.title !== idea.title)]);
+    localStorage.setItem(ideasKey, JSON.stringify([restored, ...ideas.filter((item) => item.title !== idea.title)]));
+    localStorage.setItem(archiveKey, JSON.stringify(archivedIdeas.filter((item) => item.title !== idea.title)));
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { error } = await supabase.from("article_ideas").update({ status: "new", updated_at: new Date().toISOString() }).eq("owner_id", userData.user.id).eq("title", idea.title);
+        if (error) throw error;
+      }
+    } catch {
+      setIdeasError("Идея восстановлена локально, но статус в Cloud library не обновился.");
+    }
   }
 
   function setField<Key extends keyof ArticleDraft>(
@@ -790,6 +828,24 @@ export function ArticleDraftEditor() {
               ))}
             </div>
           )}
+          <details className="admin-idea-archive">
+            <summary className="admin-idea-platform-heading"><strong>Архив использованных идей</strong><span>{archivedIdeas.length}</span></summary>
+            {archivedIdeas.length === 0 ? <p className="admin-muted">После применения идея появится здесь.</p> : (
+              <div className="admin-ideas-list">
+                {archivedIdeasByPlatform.map(([platform, platformIdeas]) => (
+                  <details className="admin-idea-platform" key={`archive-${platform}`}>
+                    <summary className="admin-idea-platform-heading"><strong>{platform}</strong><span>{platformIdeas.length}</span></summary>
+                    {platformIdeas.map((idea) => (
+                      <div className="admin-idea-row" key={`archive-${idea.id}-${idea.title}`}>
+                        <div><strong>{idea.title}</strong><small>{idea.locale.toUpperCase()} · использована</small></div>
+                        <button type="button" className="button ghost" onClick={() => void restoreIdea(idea)}>Вернуть в банк</button>
+                      </div>
+                    ))}
+                  </details>
+                ))}
+              </div>
+            )}
+          </details>
         </section>
 
         <div className="admin-utility-grid">

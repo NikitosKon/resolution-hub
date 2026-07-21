@@ -1848,6 +1848,21 @@ h3 {
   padding-right: 8px;
 }
 
+.admin-idea-archive {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.admin-idea-archive > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-idea-archive > summary::-webkit-details-marker {
+  display: none;
+}
+
 .admin-idea-platform {
   padding: 0 12px;
   border: 1px solid var(--line);
