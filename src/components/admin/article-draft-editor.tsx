@@ -9,6 +9,7 @@ import {
   validateDraft,
   type ArticleDraft,
   type DraftTemplateId,
+  type DraftTable,
 } from "@/lib/article-draft";
 import { locales, type Locale } from "@/lib/locales";
 import { articleIdeaCriteria, starterArticleIdeas, type ArticleIdea } from "@/lib/article-ideas";
@@ -55,6 +56,19 @@ function updateSection(
     ...draft,
     [collection]: draft[collection].map((item, itemIndex) =>
       itemIndex === index ? { ...item, [field]: value } : item,
+    ),
+  };
+}
+
+function updateTable(
+  draft: ArticleDraft,
+  index: number,
+  updater: (table: DraftTable) => DraftTable,
+) {
+  return {
+    ...draft,
+    tables: (draft.tables ?? []).map((table, tableIndex) =>
+      tableIndex === index ? updater(table) : table,
     ),
   };
 }
@@ -318,6 +332,56 @@ export function ArticleDraftEditor() {
     }));
   }
 
+  function addTable() {
+    setDraft((current) => ({
+      ...current,
+      tables: [
+        ...(current.tables ?? []),
+        { heading: "", columns: ["Пункт", "Что проверить"], rows: [["", ""]] },
+      ],
+    }));
+  }
+
+  function removeTable(index: number) {
+    setDraft((current) => ({
+      ...current,
+      tables: (current.tables ?? []).filter((_, tableIndex) => tableIndex !== index),
+    }));
+  }
+
+  function addTableRow(tableIndex: number) {
+    setDraft((current) => updateTable(current, tableIndex, (table) => ({
+      ...table,
+      rows: [...table.rows, table.columns.map(() => "")],
+    })));
+  }
+
+  function addTableColumn(tableIndex: number) {
+    setDraft((current) => updateTable(current, tableIndex, (table) => ({
+      ...table,
+      columns: [...table.columns, "Новая колонка"],
+      rows: table.rows.map((row) => [...row, ""]),
+    })));
+  }
+
+  function removeTableRow(tableIndex: number, rowIndex: number) {
+    setDraft((current) => updateTable(current, tableIndex, (table) => ({
+      ...table,
+      rows: table.rows.filter((_, index) => index !== rowIndex),
+    })));
+  }
+
+  function removeTableColumn(tableIndex: number, columnIndex: number) {
+    setDraft((current) => updateTable(current, tableIndex, (table) => {
+      if (table.columns.length <= 1) return table;
+      return {
+        ...table,
+        columns: table.columns.filter((_, index) => index !== columnIndex),
+        rows: table.rows.map((row) => row.filter((_, index) => index !== columnIndex)),
+      };
+    }));
+  }
+
   async function saveToLibrary(nextStatus: ArticleStatus = status) {
     const record: SavedDraft = {
       id: `${Date.now()}`,
@@ -424,6 +488,7 @@ export function ArticleDraftEditor() {
         summary: generated.summary || current.summary,
         quickAnswer: generated.quickAnswer || current.quickAnswer,
         sections: Array.isArray(generated.sections) ? generated.sections : current.sections,
+        tables: Array.isArray(generated.tables) ? generated.tables : (current.tables ?? []),
         warnings: generated.warnings || current.warnings,
         officialSources: generated.officialSources || current.officialSources,
         faq: Array.isArray(generated.faq) ? generated.faq : current.faq,
@@ -819,6 +884,81 @@ export function ArticleDraftEditor() {
               </div>
             </div>
 
+            <div className="admin-card">
+              <div className="admin-card-heading">
+                <div>
+                  <h2>Structured tables</h2>
+                  <p className="admin-muted">Добавляй таблицы для сравнений, проверок, документов и следующих шагов.</p>
+                </div>
+                <button type="button" className="button secondary" onClick={addTable}>Добавить таблицу</button>
+              </div>
+              {(draft.tables ?? []).length === 0 ? (
+                <p className="admin-muted">Таблицы необязательны. Используй их только там, где они упрощают сравнение.</p>
+              ) : (
+                <div className="admin-table-editors">
+                  {(draft.tables ?? []).map((table, tableIndex) => (
+                    <div className="admin-table-editor" key={`table-${tableIndex}`}>
+                      <div className="admin-table-editor-head">
+                        <input
+                          value={table.heading}
+                          placeholder="Название таблицы"
+                          onChange={(event) => setDraft((current) => updateTable(current, tableIndex, (item) => ({ ...item, heading: event.target.value })))}
+                        />
+                        <button type="button" className="button ghost" onClick={() => removeTable(tableIndex)}>Удалить таблицу</button>
+                      </div>
+                      <div className="admin-table-scroll">
+                        <table className="v4-table admin-edit-table">
+                          <thead>
+                            <tr>
+                              {table.columns.map((column, columnIndex) => (
+                                <th key={`column-${columnIndex}`}>
+                                  <input
+                                    value={column}
+                                    aria-label={`Название колонки ${columnIndex + 1}`}
+                                    onChange={(event) => setDraft((current) => updateTable(current, tableIndex, (item) => ({
+                                      ...item,
+                                      columns: item.columns.map((value, index) => index === columnIndex ? event.target.value : value),
+                                    })))}
+                                  />
+                                  <button type="button" className="admin-remove" onClick={() => removeTableColumn(tableIndex, columnIndex)} aria-label={`Удалить колонку ${columnIndex + 1}`}>×</button>
+                                </th>
+                              ))}
+                              <th aria-label="Действия" />
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {table.rows.map((row, rowIndex) => (
+                              <tr key={`row-${rowIndex}`}>
+                                {table.columns.map((_, columnIndex) => (
+                                  <td key={`cell-${rowIndex}-${columnIndex}`}>
+                                    <textarea
+                                      value={row[columnIndex] ?? ""}
+                                      aria-label={`Строка ${rowIndex + 1}, колонка ${columnIndex + 1}`}
+                                      onChange={(event) => setDraft((current) => updateTable(current, tableIndex, (item) => ({
+                                        ...item,
+                                        rows: item.rows.map((itemRow, index) => index === rowIndex
+                                          ? itemRow.map((value, cellIndex) => cellIndex === columnIndex ? event.target.value : value)
+                                          : itemRow),
+                                      })))}
+                                    />
+                                  </td>
+                                ))}
+                                <td><button type="button" className="admin-remove" onClick={() => removeTableRow(tableIndex, rowIndex)} aria-label={`Удалить строку ${rowIndex + 1}`}>×</button></td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div className="admin-table-actions">
+                        <button type="button" className="button ghost" onClick={() => addTableRow(tableIndex)}>Добавить строку</button>
+                        <button type="button" className="button ghost" onClick={() => addTableColumn(tableIndex)}>Добавить колонку</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="admin-card form-grid">
               <label className="field full">
                 <span>Warnings</span>
@@ -907,6 +1047,17 @@ export function ArticleDraftEditor() {
                 <section key={`${section.heading}-${index}`}>
                   <h2>{section.heading}</h2>
                   <p>{section.body || "Draft section text."}</p>
+                </section>
+              ))}
+              {(draft.tables ?? []).map((table, tableIndex) => (
+                <section key={`preview-table-${tableIndex}`}>
+                  <h2>{table.heading || "Table"}</h2>
+                  <div className="v4-table-wrap">
+                    <table className="v4-table">
+                      <thead><tr>{table.columns.map((column, index) => <th key={`preview-column-${index}`}>{column || "Column"}</th>)}</tr></thead>
+                      <tbody>{table.rows.map((row, rowIndex) => <tr key={`preview-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`preview-cell-${rowIndex}-${columnIndex}`}>{row[columnIndex] || "—"}</td>)}</tr>)}</tbody>
+                    </table>
+                  </div>
                 </section>
               ))}
               <section>

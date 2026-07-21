@@ -9,6 +9,12 @@ export type DraftSection = {
   body: string;
 };
 
+export type DraftTable = {
+  heading: string;
+  columns: string[];
+  rows: string[][];
+};
+
 export type DraftTranslation = {
   title: string;
   summary: string;
@@ -25,6 +31,7 @@ export type ArticleDraft = {
   summary: string;
   quickAnswer: string;
   sections: DraftSection[];
+  tables: DraftTable[];
   warnings: string;
   faq: DraftSection[];
   officialSources: string;
@@ -143,6 +150,7 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
     summary: "",
     quickAnswer: "",
     sections: template.sections.map((heading) => ({ heading, body: "" })),
+    tables: [],
     warnings: "",
     faq: [
       { heading: "Can this be fixed?", body: "" },
@@ -169,6 +177,12 @@ export function draftToMarkdown(
   const faq = draft.faq
     .map((item) => `### ${item.heading}\n\n${item.body || "[Draft]"}`)
     .join("\n\n");
+  const tables = (draft.tables ?? []).map((table) => {
+    const header = `| ${table.columns.join(" | ")} |`;
+    const divider = `| ${table.columns.map(() => "---").join(" | ")} |`;
+    const rows = table.rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
+    return [`## ${table.heading || "Table"}`, header, divider, rows].join("\n");
+  }).join("\n\n");
   return [
     "---",
     `status: ${status}`,
@@ -185,6 +199,7 @@ export function draftToMarkdown(
     "## Quick answer",
     draft.quickAnswer || "[Draft]",
     sections,
+    tables,
     "## Before you continue",
     draft.warnings || "[Draft]",
     "## Common questions",

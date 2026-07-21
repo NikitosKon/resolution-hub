@@ -89,10 +89,11 @@ Editorial requirements:
 - Explain what the reader should not assume, what evidence is useful, and when they must use the platform's own support or official help.
 - Keep paragraphs short (2–4 sentences), remove filler, repeated conclusions and generic introductions.
 - Include 5–8 distinct sections, one practical warning, and 3–5 genuinely useful common questions. Do not create a FAQ just to repeat the article.
+- Add at most two tables only when they clarify a comparison, a checklist or requested evidence. Keep cells short; return an empty array when a table would add no value.
 - The result should read like an edited Resolution Hub guide, not like a marketing post, chatbot answer or legal opinion.
 
 Write the main article in Russian using natural Cyrillic Russian only. Do not insert Chinese, Japanese, Korean or unexplained English fragments into the Russian title, summary, sections, warnings or FAQ. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
-{"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
+{"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]]}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;
 
