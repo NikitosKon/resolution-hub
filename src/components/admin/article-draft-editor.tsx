@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Download, FileText, LogOut, Save, Sparkles, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { Download, FileText, LogOut, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
   createDraft,
   draftTemplates,
@@ -15,6 +15,7 @@ import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const storageKey = "resolution-hub.article-draft";
 const libraryKey = "resolution-hub.article-drafts";
+const ideasKey = "resolution-hub.article-ideas";
 
 type SavedDraft = {
   id: string;
@@ -26,6 +27,20 @@ type SavedDraft = {
 };
 
 type ArticleStatus = "draft" | "review" | "approved" | "published";
+
+type ArticleIdea = {
+  id: string;
+  title: string;
+  platform: string;
+  locale: Locale;
+  primaryKeyword: string;
+  intent: string;
+  priority: "high" | "medium" | "low";
+  status: "new" | "planned" | "used" | "archived";
+  demandEvidence: string;
+  source: string;
+  sourceCheckedAt: string;
+};
 
 const articleStatuses: Array<{ value: ArticleStatus; label: string }> = [
   { value: "draft", label: "Draft" },
@@ -77,6 +92,8 @@ export function ArticleDraftEditor() {
   const [status, setStatus] = useState<ArticleStatus>("draft");
   const [groqBusy, setGroqBusy] = useState(false);
   const [groqError, setGroqError] = useState("");
+  const [ideas, setIdeas] = useState<ArticleIdea[]>([]);
+  const [ideasError, setIdeasError] = useState("");
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
   const wordCount = useMemo(
     () => markdown.split(/\s+/).filter(Boolean).length,
@@ -108,6 +125,25 @@ export function ArticleDraftEditor() {
             draft: item.draft as ArticleDraft,
           })),
         );
+        const { data: ideaData, error: ideaError } = await supabase
+          .from("article_ideas")
+          .select("id, title, platform, locale, primary_keyword, intent, priority, status, demand_evidence, source, source_checked_at")
+          .order("priority", { ascending: true })
+          .order("created_at", { ascending: false });
+        if (ideaError) throw ideaError;
+        setIdeas((ideaData ?? []).map((item) => ({
+          id: item.id as string,
+          title: item.title as string,
+          platform: item.platform as string,
+          locale: (item.locale as Locale) || "ru",
+          primaryKeyword: item.primary_keyword as string,
+          intent: item.intent as string,
+          priority: (item.priority as ArticleIdea["priority"]) || "medium",
+          status: (item.status as ArticleIdea["status"]) || "new",
+          demandEvidence: item.demand_evidence as string,
+          source: item.source as string,
+          sourceCheckedAt: (item.source_checked_at as string) || "",
+        })));
         return;
       } catch {
         // Keep the local library available if the database is not configured yet.
@@ -116,6 +152,7 @@ export function ArticleDraftEditor() {
     void loadCloudDrafts();
     const saved = localStorage.getItem(storageKey);
     const library = localStorage.getItem(libraryKey);
+    const savedIdeas = localStorage.getItem(ideasKey);
     let libraryFrame = 0;
     if (library) {
       try {
@@ -127,6 +164,14 @@ export function ArticleDraftEditor() {
         );
       } catch {
         localStorage.removeItem(libraryKey);
+      }
+    }
+    if (savedIdeas) {
+      try {
+        const parsedIdeas = JSON.parse(savedIdeas) as ArticleIdea[];
+        requestAnimationFrame(() => setIdeas(parsedIdeas));
+      } catch {
+        localStorage.removeItem(ideasKey);
       }
     }
     if (!saved) return;
@@ -143,6 +188,82 @@ export function ArticleDraftEditor() {
       cancelAnimationFrame(libraryFrame);
     };
   }, []);
+
+  function ideaFromRow(row: Record<string, string>, index: number): ArticleIdea {
+    const priority = row.priority?.toLowerCase();
+    return {
+      id: `local-${Date.now()}-${index}`,
+      title: row.title || row.idea || row.topic || "",
+      platform: row.platform || "",
+      locale: (row.language || row.locale || "ru") as Locale,
+      primaryKeyword: row.primary_keyword || row.primaryKeyword || row.keyword || row.title || "",
+      intent: row.intent || "",
+      priority: priority === "high" || priority === "low" ? priority : "medium",
+      status: "new",
+      demandEvidence: row.demand_evidence || row.demand || row.impressions || "",
+      source: row.source || "",
+      sourceCheckedAt: row.source_checked_at || row.checked_at || new Date().toISOString().slice(0, 10),
+    };
+  }
+
+  async function importIdeas(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    const lines = (await file.text()).split(/\r?\n/).filter(Boolean);
+    if (lines.length < 2) {
+      setIdeasError("CSV должен содержать строку заголовков и хотя бы одну идею.");
+      return;
+    }
+    const headers = (lines[0] ?? "").split(",").map((header) => header.trim().replace(/^"|"$/g, ""));
+    const imported = lines.slice(1).map((line, index) => {
+      const values = line.split(",").map((value) => value.trim().replace(/^"|"$/g, ""));
+      return ideaFromRow(Object.fromEntries(headers.map((header, headerIndex) => [header, values[headerIndex] || ""])), index);
+    }).filter((idea) => idea.title);
+    if (!imported.length) {
+      setIdeasError("В CSV не найдено ни одной идеи с заполненным title.");
+      return;
+    }
+    setIdeasError("");
+    setIdeas((current) => [...imported, ...current]);
+    localStorage.setItem(ideasKey, JSON.stringify([...imported, ...ideas]));
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+      const { error } = await supabase.from("article_ideas").upsert(imported.map((idea) => ({
+        owner_id: userData.user.id,
+        title: idea.title,
+        platform: idea.platform,
+        locale: idea.locale,
+        primary_keyword: idea.primaryKeyword,
+        intent: idea.intent,
+        priority: idea.priority,
+        status: idea.status,
+        demand_evidence: idea.demandEvidence,
+        source: idea.source,
+        source_checked_at: idea.sourceCheckedAt || null,
+        updated_at: new Date().toISOString(),
+      })), { onConflict: "owner_id,title" });
+      if (error) throw error;
+    } catch {
+      setIdeasError("Идеи сохранены локально. Для Cloud library проверь таблицу article_ideas в Supabase.");
+    }
+  }
+
+  function applyIdea(idea: ArticleIdea) {
+    setDraft((current) => ({
+      ...current,
+      title: idea.title,
+      platform: idea.platform || current.platform,
+      locale: idea.locale,
+      primaryKeyword: idea.primaryKeyword || idea.title,
+      slug: slugify(idea.title),
+    }));
+    setIdeas((current) => current.map((item) => item.id === idea.id ? { ...item, status: "planned" } : item));
+    localStorage.setItem(ideasKey, JSON.stringify(ideas.map((item) => item.id === idea.id ? { ...item, status: "planned" } : item)));
+    setStatus("draft");
+  }
 
   function setField<Key extends keyof ArticleDraft>(
     key: Key,
@@ -365,6 +486,40 @@ export function ArticleDraftEditor() {
         <p className="admin-muted">
           Введи заголовок — Groq подготовит русскую статью и варианты EN/UK. Только черновик: не вводи пароли, коды подтверждения или полные документы.
         </p>
+
+        <section className="admin-card admin-ideas">
+          <div className="admin-card-heading">
+            <div>
+              <p className="eyebrow">Demand backlog</p>
+              <h2>Банк идей</h2>
+            </div>
+            <label className="button secondary admin-upload">
+              <Upload size={16} aria-hidden="true" />
+              Импорт CSV
+              <input type="file" accept=".csv,text/csv" onChange={importIdeas} hidden />
+            </label>
+          </div>
+          <p className="admin-muted">
+            Импортируй запросы из Search Console, Trends или Keyword Planner. Популярность — сигнал для приоритета, не доказательство правила платформы.
+          </p>
+          {ideasError ? <p className="admin-form-error">{ideasError}</p> : null}
+          {ideas.length === 0 ? (
+            <p className="admin-muted">Пока нет идей. CSV должен начинаться с `title`; также можно указать platform, language, keyword, intent, priority, demand, source.</p>
+          ) : (
+            <div className="admin-ideas-list">
+              {ideas.slice(0, 8).map((idea) => (
+                <div className="admin-idea-row" key={idea.id}>
+                  <div>
+                    <strong>{idea.title}</strong>
+                    <small>{idea.platform || "Без платформы"} · {idea.locale.toUpperCase()} · {idea.priority} · {idea.status}</small>
+                    {idea.demandEvidence ? <small>{idea.demandEvidence}</small> : null}
+                  </div>
+                  <button type="button" className="button ghost" onClick={() => applyIdea(idea)}>В черновик</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
 
         <div className="admin-utility-grid">
           <section className="admin-card admin-preflight">

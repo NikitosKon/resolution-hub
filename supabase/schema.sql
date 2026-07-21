@@ -44,3 +44,44 @@ create policy "Owners can delete their drafts"
   on public.article_drafts for delete
   to authenticated
   using (auth.uid() = owner_id);
+
+create table if not exists public.article_ideas (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  title text not null,
+  platform text not null default '',
+  locale text not null default 'ru',
+  primary_keyword text not null default '',
+  intent text not null default '',
+  priority text not null default 'medium',
+  status text not null default 'new',
+  demand_evidence text not null default '',
+  source text not null default '',
+  source_checked_at date,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (owner_id, title)
+);
+
+alter table public.article_ideas enable row level security;
+
+create policy "Owners can read their ideas"
+  on public.article_ideas for select
+  to authenticated
+  using (auth.uid() = owner_id);
+
+create policy "Owners can create their ideas"
+  on public.article_ideas for insert
+  to authenticated
+  with check (auth.uid() = owner_id);
+
+create policy "Owners can update their ideas"
+  on public.article_ideas for update
+  to authenticated
+  using (auth.uid() = owner_id)
+  with check (auth.uid() = owner_id);
+
+create policy "Owners can delete their ideas"
+  on public.article_ideas for delete
+  to authenticated
+  using (auth.uid() = owner_id);
