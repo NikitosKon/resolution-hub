@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, FileText, LogOut, Save, Trash2 } from "lucide-react";
+import { Download, FileText, LogOut, Save, Sparkles, Trash2 } from "lucide-react";
 import {
   createDraft,
   draftTemplates,
@@ -75,6 +75,8 @@ export function ArticleDraftEditor() {
   const [accountEmail, setAccountEmail] = useState("");
   const [cloudReady, setCloudReady] = useState(false);
   const [status, setStatus] = useState<ArticleStatus>("draft");
+  const [groqBusy, setGroqBusy] = useState(false);
+  const [groqError, setGroqError] = useState("");
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
   const wordCount = useMemo(
     () => markdown.split(/\s+/).filter(Boolean).length,
@@ -224,6 +226,44 @@ export function ArticleDraftEditor() {
     }
   }
 
+  async function generateWithGroq() {
+    setGroqBusy(true);
+    setGroqError("");
+    try {
+      const response = await fetch("/api/admin/groq/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          platform: draft.platform,
+          locale: draft.locale,
+          primaryKeyword: draft.primaryKeyword,
+          title: draft.title,
+          summary: draft.summary,
+          quickAnswer: draft.quickAnswer,
+          sectionHeadings: draft.sections.map((section) => section.heading),
+        }),
+      });
+      const result = (await response.json()) as { draft?: Partial<ArticleDraft>; error?: string };
+      if (!response.ok || !result.draft) throw new Error(result.error || "Groq request failed");
+      const generated = result.draft;
+      setDraft((current) => ({
+        ...current,
+        title: generated.title || current.title,
+        summary: generated.summary || current.summary,
+        quickAnswer: generated.quickAnswer || current.quickAnswer,
+        sections: Array.isArray(generated.sections) ? generated.sections : current.sections,
+        warnings: generated.warnings || current.warnings,
+        faq: Array.isArray(generated.faq) ? generated.faq : current.faq,
+        translations: { ...current.translations, ...(generated.translations || {}) },
+      }));
+      setStatus("draft");
+    } catch (error) {
+      setGroqError(error instanceof Error ? error.message : "Groq request failed");
+    } finally {
+      setGroqBusy(false);
+    }
+  }
+
   function selectTemplate(templateId: DraftTemplateId) {
     setDraft((current) => ({
       ...createDraft(templateId),
@@ -267,6 +307,15 @@ export function ArticleDraftEditor() {
           >
             <Save size={16} aria-hidden="true" />
             Save to library
+          </button>
+          <button
+            type="button"
+            className="button secondary"
+            onClick={generateWithGroq}
+            disabled={groqBusy}
+          >
+            <Sparkles size={16} aria-hidden="true" />
+            {groqBusy ? "Generating…" : "Draft with Groq"}
           </button>
           <button type="button" className="button secondary" onClick={signOut}>
             <LogOut size={16} aria-hidden="true" />
@@ -312,6 +361,10 @@ export function ArticleDraftEditor() {
             Clear
           </button>
         </div>
+        {groqError ? <p className="admin-form-error">{groqError}</p> : null}
+        <p className="admin-muted">
+          Groq creates a draft only. Do not enter passwords, authentication codes or full identity documents.
+        </p>
 
         <div className="admin-utility-grid">
           <section className="admin-card admin-preflight">
