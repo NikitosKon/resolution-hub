@@ -131,12 +131,15 @@ export function ArticleDraftEditor() {
           source: item.source as string,
           sourceCheckedAt: (item.source_checked_at as string) || "",
         }));
-        if (cloudIdeas.length) setIdeas(cloudIdeas);
-        else {
-          const seeded = starterArticleIdeas.map((idea, index) => ({ ...idea, id: `seed-${index}`, status: "new" as const }));
-          setIdeas(seeded);
-          setIdeasError("Стартовые идеи загружены. Их приоритет нужно подтвердить данными Google перед публикацией.");
-          const { error: seedError } = await supabase.from("article_ideas").upsert(seeded.map((idea) => ({
+        const existingTitles = new Set(cloudIdeas.map((idea) => idea.title));
+        const missingIdeas = starterArticleIdeas
+          .filter((idea) => !existingTitles.has(idea.title))
+          .map((idea, index) => ({ ...idea, id: `seed-${cloudIdeas.length}-${index}`, status: "new" as const }));
+        const mergedIdeas = [...cloudIdeas, ...missingIdeas];
+        setIdeas(mergedIdeas);
+        if (missingIdeas.length) {
+          setIdeasError("Банк идей синхронизирован до 100 тем. Приоритет нужно подтвердить данными Google перед публикацией.");
+          const { error: seedError } = await supabase.from("article_ideas").upsert(missingIdeas.map((idea) => ({
             owner_id: userData.user.id,
             title: idea.title,
             platform: idea.platform,
@@ -525,7 +528,7 @@ export function ArticleDraftEditor() {
             <p className="admin-muted">Пока нет идей. CSV должен начинаться с `title`; также можно указать platform, language, keyword, intent, priority, demand, source.</p>
           ) : (
             <div className="admin-ideas-list">
-              {ideas.slice(0, 8).map((idea) => (
+              {ideas.map((idea) => (
                 <div className="admin-idea-row" key={idea.id}>
                   <div>
                     <strong>{idea.title}</strong>
