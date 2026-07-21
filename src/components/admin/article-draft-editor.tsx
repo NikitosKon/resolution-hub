@@ -300,13 +300,13 @@ export function ArticleDraftEditor() {
     }));
   }
 
-  async function saveToLibrary() {
+  async function saveToLibrary(nextStatus: ArticleStatus = status) {
     const record: SavedDraft = {
       id: `${Date.now()}`,
       title: draft.title || "Untitled guide",
       slug: draft.slug || "no-slug",
       updatedAt: new Date().toISOString(),
-      status,
+      status: nextStatus,
       draft,
     };
     const next = [record, ...savedDrafts.filter((item) => item.slug !== draft.slug)];
@@ -334,6 +334,18 @@ export function ArticleDraftEditor() {
     } catch {
       // LocalStorage remains a safe offline fallback.
     }
+  }
+
+  async function publishDraft() {
+    const checks = validateDraft(draft);
+    const missing = checks.filter((check) => !check.ok).map((check) => check.label);
+    if (!draft.title.trim() || !draft.slug.trim() || !draft.officialSources.trim()) {
+      setGroqError(`Перед публикацией заполни: ${[...missing, !draft.officialSources.trim() ? "Official sources" : ""].filter(Boolean).join(", ")}.`);
+      return;
+    }
+    setGroqError("");
+    setStatus("published");
+    await saveToLibrary("published");
   }
 
   async function removeSavedDraft(id: string) {
@@ -388,6 +400,7 @@ export function ArticleDraftEditor() {
         quickAnswer: generated.quickAnswer || current.quickAnswer,
         sections: Array.isArray(generated.sections) ? generated.sections : current.sections,
         warnings: generated.warnings || current.warnings,
+        officialSources: generated.officialSources || current.officialSources,
         faq: Array.isArray(generated.faq) ? generated.faq : current.faq,
         translations: { ...current.translations, ...(generated.translations || {}) },
       }));
@@ -438,7 +451,7 @@ export function ArticleDraftEditor() {
           <button
             type="button"
             className="button secondary"
-            onClick={saveToLibrary}
+            onClick={() => void saveToLibrary()}
           >
             <Save size={16} aria-hidden="true" />
             Save to library
@@ -451,6 +464,10 @@ export function ArticleDraftEditor() {
           >
             <Sparkles size={16} aria-hidden="true" />
             {groqBusy ? "Пишу статью…" : "Написать по заголовку"}
+          </button>
+          <button type="button" className="button primary" onClick={publishDraft}>
+            <Upload size={16} aria-hidden="true" />
+            Опубликовать в библиотеке
           </button>
           <button type="button" className="button secondary" onClick={signOut}>
             <LogOut size={16} aria-hidden="true" />
