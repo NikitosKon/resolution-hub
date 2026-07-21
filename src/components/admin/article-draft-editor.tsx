@@ -7,6 +7,7 @@ import {
   createDraft,
   draftTemplates,
   draftToMarkdown,
+  draftWordCount,
   validateDraft,
   type ArticleDraft,
   type DraftTemplateId,
@@ -128,8 +129,8 @@ export function ArticleDraftEditor() {
   const [reviewConfirmed, setReviewConfirmed] = useState({ claims: false, sources: false, read: false });
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
   const wordCount = useMemo(
-    () => markdown.split(/\s+/).filter(Boolean).length,
-    [markdown],
+    () => draftWordCount(draft),
+    [draft],
   );
   const ideasByPlatform = useMemo(() => {
     const groups = new Map<string, ArticleIdea[]>();

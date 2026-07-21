@@ -57,6 +57,20 @@ export type DraftCheck = {
   detail: string;
 };
 
+export function draftWordCount(draft: ArticleDraft) {
+  const parts = [
+    draft.title,
+    draft.summary,
+    draft.quickAnswer,
+    ...draft.sections.flatMap((section) => [section.heading, section.body]),
+    ...(draft.tables ?? []).flatMap((table) => [table.heading, ...table.columns, ...table.rows.flat()]),
+    ...(draft.visualBlocks ?? []).flatMap((block) => [block.heading, block.body, ...block.items]),
+    draft.warnings,
+    ...draft.faq.flatMap((item) => [item.heading, item.body]),
+  ];
+  return parts.join(" ").split(/\s+/).filter(Boolean).length;
+}
+
 /** Local preflight only. It never replaces V4 research or Final QA. */
 export function validateDraft(draft: ArticleDraft): DraftCheck[] {
   const checks: DraftCheck[] = [
@@ -99,6 +113,14 @@ export function validateDraft(draft: ArticleDraft): DraftCheck[] {
         (draft.tables ?? []).length === 1 && (draft.visualBlocks ?? []).length >= 2
           ? "One table and at least two visual blocks are present."
           : "Add one table and at least two useful visual blocks before approval.",
+    },
+    {
+      label: "Article depth",
+      ok: draftWordCount(draft) >= 2000,
+      detail:
+        draftWordCount(draft) >= 2000
+          ? "The article contains at least 2,000 words of useful material."
+          : `Add ${Math.max(0, 2000 - draftWordCount(draft))} more useful words; do not pad with repetition.`,
     },
     {
       label: "Official sources",
