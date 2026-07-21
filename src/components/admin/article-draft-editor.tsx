@@ -315,7 +315,7 @@ export function ArticleDraftEditor() {
             disabled={groqBusy}
           >
             <Sparkles size={16} aria-hidden="true" />
-            {groqBusy ? "Generating…" : "Draft with Groq"}
+            {groqBusy ? "Пишу статью…" : "Написать по заголовку"}
           </button>
           <button type="button" className="button secondary" onClick={signOut}>
             <LogOut size={16} aria-hidden="true" />
@@ -363,7 +363,7 @@ export function ArticleDraftEditor() {
         </div>
         {groqError ? <p className="admin-form-error">{groqError}</p> : null}
         <p className="admin-muted">
-          Groq creates a draft only. Do not enter passwords, authentication codes or full identity documents.
+          Введи заголовок — Groq подготовит русскую статью и варианты EN/UK. Только черновик: не вводи пароли, коды подтверждения или полные документы.
         </p>
 
         <div className="admin-utility-grid">

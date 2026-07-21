@@ -35,26 +35,27 @@ export async function POST(request: Request) {
     sectionHeadings?: string[];
   };
 
-  const platform = body.platform?.trim().slice(0, 80);
-  const locale = body.locale?.trim().slice(0, 8);
-  const keyword = body.primaryKeyword?.trim().slice(0, 160);
-  if (!platform || !locale || !keyword) {
+  const title = body.title?.trim().slice(0, 180);
+  if (!title) {
     return NextResponse.json(
-      { error: "Platform, language and primary keyword are required" },
+      { error: "Title is required" },
       { status: 400 },
     );
   }
+  const platform = body.platform?.trim().slice(0, 80) || "Marketplace account";
+  const locale = body.locale?.trim().slice(0, 8) || "ru";
+  const keyword = body.primaryKeyword?.trim().slice(0, 160) || title;
 
   const prompt = `Create a fact-conscious editorial draft for Resolution Hub.
 Platform: ${platform}
 Language: ${locale}
 Primary keyword: ${keyword}
-Working title: ${body.title?.slice(0, 180) || "not set"}
+Working title: ${title}
 Summary idea: ${body.summary?.slice(0, 500) || "not set"}
 Quick answer idea: ${body.quickAnswer?.slice(0, 500) || "not set"}
 Required section headings: ${(body.sectionHeadings ?? []).slice(0, 8).join(" | ")}
 
-Return JSON only with this shape:
+Write the main article in Russian. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
 {"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"warnings":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;

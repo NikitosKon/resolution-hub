@@ -135,7 +135,7 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
   const template = draftTemplates[templateId];
   return {
     templateId,
-    locale: "en",
+    locale: "ru",
     platform: "PayPal",
     slug: "",
     primaryKeyword: "",
