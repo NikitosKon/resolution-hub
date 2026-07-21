@@ -2224,6 +2224,19 @@ h3 {
   margin-bottom: 12px;
 }
 
+.admin-placement-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.admin-placement-field input {
+  width: 64px;
+}
+
 .admin-table-editor-head input,
 .admin-edit-table input,
 .admin-edit-table textarea {

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Fragment } from "react";
 import { ArrowRight, Check, Search } from "lucide-react";
 import type { Locale } from "@/lib/locales";
 import {
@@ -541,6 +542,22 @@ export function PublishedDraftPage({
   const summary = cleanPublishedDraftText(translation?.summary || draft.summary, locale);
   const quickAnswer = cleanPublishedDraftText(translation?.quickAnswer || draft.quickAnswer, locale);
   const sources = draft.officialSources.split(/\r?\n/).map((source) => source.trim()).filter(Boolean);
+  const tablesBySection = new Map<number, Array<(typeof draft.tables)[number] & { _index: number }>>();
+  (draft.tables ?? []).forEach((table, index) => {
+    const key = typeof table.afterSection === "number" ? table.afterSection : draft.sections.length - 1;
+    tablesBySection.set(key, [...(tablesBySection.get(key) ?? []), { ...table, _index: index }]);
+  });
+  const blocksBySection = new Map<number, Array<(typeof draft.visualBlocks)[number] & { _index: number }>>();
+  (draft.visualBlocks ?? []).forEach((block, index) => {
+    const key = typeof block.afterSection === "number" ? block.afterSection : draft.sections.length - 1;
+    blocksBySection.set(key, [...(blocksBySection.get(key) ?? []), { ...block, _index: index }]);
+  });
+  const contextualBlocks = (sectionIndex: number) => (
+    <>
+      {(tablesBySection.get(sectionIndex) ?? []).map((table) => <section key={`table-${table._index}`}><h2>{cleanPublishedDraftText(table.heading, locale) || "Table"}</h2><div className="v4-table-wrap"><table className="v4-table"><thead><tr>{table.columns.map((column, columnIndex) => <th key={`table-column-${columnIndex}`}>{cleanPublishedDraftText(column, locale)}</th>)}</tr></thead><tbody>{table.rows.map((row, rowIndex) => <tr key={`table-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`table-cell-${rowIndex}-${columnIndex}`}>{cleanPublishedDraftText(row[columnIndex] ?? "", locale)}</td>)}</tr>)}</tbody></table></div></section>)}
+      {(blocksBySection.get(sectionIndex) ?? []).map((block) => <section className={`draft-visual-block draft-visual-${block.type}`} key={`visual-${block._index}`}><h2>{cleanPublishedDraftText(block.heading, locale) || block.type}</h2>{block.body ? <p>{cleanPublishedDraftText(block.body, locale)}</p> : null}{block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`visual-item-${itemIndex}`}>{cleanPublishedDraftText(item, locale)}</li>)}</ul> : null}{block.source ? <small>{cleanPublishedDraftText(block.source, locale)}</small> : null}</section>)}
+    </>
+  );
   return (
     <main id="main">
       <Breadcrumbs locale={locale} items={[{ label: platform.name, href: `/${locale}/${platform.slug}/` }, { label: title }]} />
@@ -563,9 +580,7 @@ export function PublishedDraftPage({
           <TableOfContents locale={locale} hasDocuments={false} />
           <div className="prose">
             <QuickAnswer title={d.article.quick}><p>{quickAnswer}</p></QuickAnswer>
-            {draft.sections.map((section, index) => <section key={`${section.heading}-${index}`}><h2>{cleanPublishedDraftText(section.heading, locale)}</h2><p>{cleanPublishedDraftText(section.body, locale)}</p></section>)}
-            {(draft.tables ?? []).map((table, tableIndex) => <section key={`table-${tableIndex}`}><h2>{cleanPublishedDraftText(table.heading, locale) || "Table"}</h2><div className="v4-table-wrap"><table className="v4-table"><thead><tr>{table.columns.map((column, columnIndex) => <th key={`table-column-${columnIndex}`}>{cleanPublishedDraftText(column, locale)}</th>)}</tr></thead><tbody>{table.rows.map((row, rowIndex) => <tr key={`table-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`table-cell-${rowIndex}-${columnIndex}`}>{cleanPublishedDraftText(row[columnIndex] ?? "", locale)}</td>)}</tr>)}</tbody></table></div></section>)}
-            {(draft.visualBlocks ?? []).map((block, blockIndex) => <section className={`draft-visual-block draft-visual-${block.type}`} key={`visual-${blockIndex}`}><h2>{cleanPublishedDraftText(block.heading, locale) || block.type}</h2>{block.body ? <p>{cleanPublishedDraftText(block.body, locale)}</p> : null}{block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`visual-item-${itemIndex}`}>{cleanPublishedDraftText(item, locale)}</li>)}</ul> : null}{block.source ? <small>{cleanPublishedDraftText(block.source, locale)}</small> : null}</section>)}
+            {draft.sections.map((section, index) => <Fragment key={`${section.heading}-${index}`}><section><h2>{cleanPublishedDraftText(section.heading, locale)}</h2><p>{cleanPublishedDraftText(section.body, locale)}</p></section>{contextualBlocks(index)}</Fragment>)}
             <section><h2>{d.article.mistakes}</h2><p>{cleanPublishedDraftText(draft.warnings, locale)}</p></section>
             {sources.length ? <SourceList locale={locale} sources={sources} /> : null}
             <section id="faq"><h2>{d.article.commonQuestions}</h2><FAQ items={draft.faq.map((item) => ({ question: cleanPublishedDraftText(item.heading, locale), answer: cleanPublishedDraftText(item.body, locale) }))} /></section>

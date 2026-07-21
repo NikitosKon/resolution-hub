@@ -45,16 +45,52 @@ function parseJson(text: string) {
   return JSON.parse(cleaned);
 }
 
+function removeUnsupportedNationalityClaims(parsed: Record<string, unknown>) {
+  const unsupported = /(граждан(?:ин|ина|е|ом)?\s+рф|российск(?:ий|ого|ому|им|ая|ой|ую)|паспорт\s+рф|водительск(?:ие|их)\s+права\s+рф)/iu;
+  const clean = (value: unknown) => typeof value === "string"
+    ? value.replace(unsupported, "документ, прямо указанный в уведомлении платформы")
+    : value;
+  for (const key of ["title", "summary", "quickAnswer", "warnings", "cta", "officialSources"]) {
+    if (key in parsed) parsed[key] = clean(parsed[key]);
+  }
+  for (const key of ["sections", "faq"]) {
+    if (Array.isArray(parsed[key])) {
+      parsed[key] = parsed[key].map((item) => {
+        if (!item || typeof item !== "object") return item;
+        const record = item as Record<string, unknown>;
+        return { ...record, heading: clean(record.heading), body: clean(record.body) };
+      });
+    }
+  }
+  if (Array.isArray(parsed.tables)) {
+    parsed.tables = parsed.tables.map((table) => {
+      if (!table || typeof table !== "object") return table;
+      const record = table as Record<string, unknown>;
+      const rows = Array.isArray(record.rows) ? record.rows.filter((row) => !Array.isArray(row) || !row.some((cell) => typeof cell === "string" && unsupported.test(cell))) : [];
+      return { ...record, heading: clean(record.heading), columns: Array.isArray(record.columns) ? record.columns.map(clean) : record.columns, rows: rows.map((row) => Array.isArray(row) ? row.map(clean) : row) };
+    });
+  }
+  if (Array.isArray(parsed.visualBlocks)) {
+    parsed.visualBlocks = parsed.visualBlocks.map((block) => {
+      if (!block || typeof block !== "object") return block;
+      const record = block as Record<string, unknown>;
+      return { ...record, heading: clean(record.heading), body: clean(record.body), items: Array.isArray(record.items) ? record.items.map(clean) : record.items, source: clean(record.source) };
+    });
+  }
+}
+
 function ensureEditorialBlocks(parsed: Record<string, unknown>) {
+  removeUnsupportedNationalityClaims(parsed);
   const sections = Array.isArray(parsed.sections) ? parsed.sections as Array<{ heading?: string }> : [];
   const tables = Array.isArray(parsed.tables) ? parsed.tables : [];
-  parsed.tables = tables.length ? tables.slice(0, 1) : [{
+  parsed.tables = tables.length ? tables.slice(0, 5) : [{
     heading: "Что проверить перед обращением",
     columns: ["Проверка", "Что подтвердить"],
     rows: sections.slice(0, 4).map((section) => [
       section.heading || "Раздел статьи",
       "Сверьте с уведомлением аккаунта и официальным источником",
     ]),
+    afterSection: Math.min(1, Math.max(0, sections.length - 1)),
   }];
   const blocks = Array.isArray(parsed.visualBlocks) ? parsed.visualBlocks as Array<Record<string, unknown>> : [];
   const fallback = [
@@ -64,6 +100,7 @@ function ensureEditorialBlocks(parsed: Record<string, unknown>) {
       body: "Соберите только сведения, которые относятся к вашей ситуации, и проверьте их по уведомлению платформы.",
       items: sections.slice(0, 4).map((section) => `Проверьте раздел «${section.heading || "требование платформы"}»`),
       source: "",
+      afterSection: Math.min(0, Math.max(0, sections.length - 1)),
     },
     {
       type: "callout",
@@ -71,9 +108,10 @@ function ensureEditorialBlocks(parsed: Record<string, unknown>) {
       body: typeof parsed.warnings === "string" && parsed.warnings.trim() ? parsed.warnings : "Не отправляйте неподтверждённые сведения и не рассчитывайте на заранее гарантированный результат.",
       items: [],
       source: "",
+      afterSection: Math.min(1, Math.max(0, sections.length - 1)),
     },
   ];
-  parsed.visualBlocks = [...blocks, ...fallback].slice(0, 2);
+  parsed.visualBlocks = [...blocks, ...fallback].slice(0, 10);
 }
 
 function draftWordCount(parsed: Record<string, unknown>) {
@@ -102,7 +140,7 @@ async function runQualityPass(apiKey: string, parsed: Record<string, unknown>) {
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: "You are the final senior editor for Resolution Hub. Never invent facts or sources." },
-        { role: "user", content: `Review this draft against a practical 10-point editorial rubric: factual caution (2), usefulness and completeness (2), clear single intent (1), natural Russian (1), non-repetitive structure (1), safe next steps (1), source boundaries (1), honest Telegram CTA (1). Target 8–10/10. Rewrite only where needed to reach that standard. Remove unsupported certainty, mixed-language fragments, repeated claims and generic filler. The revised draft must not be shorter than the input; preserve all useful detail and expand thin sections instead. If it is below 2,000 words, add genuinely useful, source-conscious detail rather than declaring it finished. Keep the same JSON article shape, exactly one table, at least two visual blocks and 8–10 purposeful sections. Return JSON only: {"score":8,"improvements":["..."],"draft":{...}}. The score must reflect the revised draft, not optimism.\n\n${JSON.stringify(parsed)}` },
+        { role: "user", content: `Review this draft against a practical 10-point editorial rubric: factual caution (2), usefulness and completeness (2), clear single intent (1), natural Russian (1), non-repetitive structure (1), safe next steps (1), source boundaries (1), honest Telegram CTA (1). Target 8–10/10. Rewrite only where needed to reach that standard. Remove unsupported certainty, mixed-language fragments, repeated claims and generic filler. The revised draft must not be shorter than the input; preserve all useful detail and expand thin sections instead. If it is below 2,000 words, add genuinely useful, source-conscious detail rather than declaring it finished. Keep 1–5 contextual tables, 2–10 contextual visual blocks and 8–10 purposeful sections; preserve each block's afterSection placement. Never introduce nationality-specific documents without explicit source support. Return JSON only: {"score":8,"improvements":["..."],"draft":{...}}. The score must reflect the revised draft, not optimism.\n\n${JSON.stringify(parsed)}` },
       ],
     }),
   });
@@ -177,15 +215,16 @@ Editorial requirements:
 - Explain what the reader should not assume, what evidence is useful, and when they must use the platform's own support or official help.
 - Keep paragraphs short (2–4 sentences), remove filler, repeated conclusions and generic introductions.
 - Produce 8–10 distinct, non-overlapping sections for a full guide. Each section must answer a different reader question or move the reader to a different safe decision. Do not create headings merely to split one idea, and do not create a FAQ just to repeat the article. If the evidence cannot support a section, state the limitation instead of inventing detail.
-- Return exactly one useful table with short cells. Use it for checks, evidence or a comparison; never invent statistics or platform rules.
-- Return at least two visual blocks from these types: checklist, timeline, decision-tree, callout, source-card. A timeline requires confirmed dates or stages; a source-card requires a real official URL; a decision-tree must use only facts already supported in the draft. A checklist and a caution callout are safe defaults when no other block is justified.
+- Use 1–5 useful tables with short cells, only where a comparison, evidence map or check sequence is clearer than prose. Never invent statistics, national document requirements or platform rules.
+- Use 2–10 visual blocks from these types: checklist, timeline, decision-tree, callout, source-card. Choose the number and type from the article context; do not fill a quota. Place each table and visual block next to the section it explains using afterSection (zero-based section index). A timeline requires confirmed dates or stages; a source-card requires a real official URL; a decision-tree must use only facts already supported in the draft. A checklist and a caution callout are safe defaults when no other block is justified.
+- Never infer a reader's nationality, country, citizenship or document type. Do not mention Russian documents, “гражданин РФ” or any country-specific identity document unless the supplied official source explicitly requires it for the relevant market. Otherwise say that the exact requirement is shown in the account notice and must be verified with the platform.
 - Make the guide complete enough to solve the reader's immediate question. Add context, account-specific limits, safe next steps and what not to assume. Aim for substantial depth when evidence supports it, but never repeat the same point or pad the article.
 - The Russian article body should contain at least 2,000 useful words before translations when the evidence supports that depth. Reach length with relevant explanations, distinctions, preparation details, uncertainty and questions—not repetition or invented facts.
 - Before returning JSON, silently run an editorial pass: remove repeated claims, unsupported certainty, mixed-language fragments, generic filler and duplicate FAQ answers. Check that every section has a concrete purpose, every platform-specific statement is either supported by one of the listed official URLs or clearly qualified, and the guide remains useful even when the platform decision is unknown.
 - The result should read like an edited Resolution Hub guide, not like a marketing post, chatbot answer or legal opinion.
 
 Write the main article in Russian using natural Cyrillic Russian only. Do not insert Chinese, Japanese, Korean or unexplained English fragments into the Russian title, summary, sections, warnings or FAQ. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
-{"title":"","summary":"","quickAnswer":"","cta":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]]}],"visualBlocks":[{"type":"checklist","heading":"","body":"","items":[""],"source":""},{"type":"callout","heading":"","body":"","items":[],"source":""}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
+{"title":"","summary":"","quickAnswer":"","cta":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]],"afterSection":0}],"visualBlocks":[{"type":"checklist","heading":"","body":"","items":[""],"source":"","afterSection":0},{"type":"callout","heading":"","body":"","items":[],"source":"","afterSection":1}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;
 
@@ -246,7 +285,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: "You are a careful Resolution Hub senior editor. Expand only with useful, source-conscious detail. Never invent facts." },
-            { role: "user", content: `This draft currently contains ${currentWordCount} words. Expand it by at least ${missingWords + 150} useful words and reach at least 2,000 words total where the evidence supports that depth. Preserve all existing facts, uncertainty, sources, warnings and intent. Add relevant explanations, distinctions, safe preparation steps, mistake prevention and genuinely useful FAQ answers. Keep 8–10 distinct sections with no repeated purpose. Do not repeat paragraphs, add statistics, invent platform rules, list documents unless the official source supports them, create cases or promise outcomes. Keep exactly one table and at least two visual blocks. Return the same JSON shape only.\n\n${JSON.stringify(parsed)}` },
+            { role: "user", content: `This draft currently contains ${currentWordCount} words. Expand it by at least ${missingWords + 150} useful words and reach at least 2,000 words total where the evidence supports that depth. Preserve all existing facts, uncertainty, sources, warnings and intent. Add relevant explanations, distinctions, safe preparation steps, mistake prevention and genuinely useful FAQ answers. Keep 8–10 distinct sections with no repeated purpose. Do not repeat paragraphs, add statistics, invent platform rules, list documents unless the official source supports them, create cases or promise outcomes. Use 1–5 contextual tables and 2–10 contextual visual blocks only when they add information, each with an afterSection placement. Return the same JSON shape only.\n\n${JSON.stringify(parsed)}` },
           ],
         }),
       });

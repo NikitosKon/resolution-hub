@@ -14,6 +14,8 @@ export type DraftTable = {
   heading: string;
   columns: string[];
   rows: string[][];
+  /** Insert after this zero-based article section when present. */
+  afterSection?: number;
 };
 
 export type DraftVisualBlockType = "checklist" | "timeline" | "decision-tree" | "callout" | "source-card";
@@ -24,6 +26,8 @@ export type DraftVisualBlock = {
   body: string;
   items: string[];
   source?: string;
+  /** Insert after this zero-based article section when present. */
+  afterSection?: number;
 };
 
 export type DraftTranslation = {
@@ -108,11 +112,11 @@ export function validateDraft(draft: ArticleDraft): DraftCheck[] {
     },
     {
       label: "Visual structure",
-      ok: (draft.tables ?? []).length === 1 && (draft.visualBlocks ?? []).length >= 2,
+      ok: (draft.tables ?? []).length >= 1 && (draft.tables ?? []).length <= 5 && (draft.visualBlocks ?? []).length >= 2 && (draft.visualBlocks ?? []).length <= 10,
       detail:
-        (draft.tables ?? []).length === 1 && (draft.visualBlocks ?? []).length >= 2
-          ? "One table and at least two visual blocks are present."
-          : "Add one table and at least two useful visual blocks before approval.",
+        (draft.tables ?? []).length >= 1 && (draft.tables ?? []).length <= 5 && (draft.visualBlocks ?? []).length >= 2 && (draft.visualBlocks ?? []).length <= 10
+          ? `${draft.tables.length} contextual table(s) and ${draft.visualBlocks.length} visual block(s) are present.`
+          : "Use 1–5 contextual tables and 2–10 useful visual blocks; remove blocks that add no information.",
     },
     {
       label: "Article depth",
@@ -231,10 +235,11 @@ export function draftToMarkdown(
     const header = `| ${table.columns.join(" | ")} |`;
     const divider = `| ${table.columns.map(() => "---").join(" | ")} |`;
     const rows = table.rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
-    return [`## ${table.heading || "Table"}`, header, divider, rows].join("\n");
+    return [`## ${table.heading || "Table"}`, table.afterSection !== undefined ? `Insert after section: ${table.afterSection + 1}` : "", header, divider, rows].filter(Boolean).join("\n");
   }).join("\n\n");
   const visualBlocks = (draft.visualBlocks ?? []).map((block) => [
     `## ${block.heading || block.type}`,
+    block.afterSection !== undefined ? `Insert after section: ${block.afterSection + 1}` : "",
     block.body || "",
     ...(block.items.length ? [block.items.map((item) => `- ${item}`).join("\n")] : []),
     block.source ? `Source: ${block.source}` : "",

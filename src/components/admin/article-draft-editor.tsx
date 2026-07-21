@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { Download, FileText, LogOut, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
@@ -618,6 +618,26 @@ export function ArticleDraftEditor() {
 
   const checks = validateDraft(draft);
   const passedChecks = checks.filter((check) => check.ok).length;
+  const previewTablesBySection = new Map<number, Array<(typeof draft.tables)[number] & { _index: number }>>();
+  (draft.tables ?? []).forEach((table, index) => {
+    const key = typeof table.afterSection === "number" ? table.afterSection : draft.sections.length - 1;
+    previewTablesBySection.set(key, [...(previewTablesBySection.get(key) ?? []), { ...table, _index: index }]);
+  });
+  const previewBlocksBySection = new Map<number, Array<(typeof draft.visualBlocks)[number] & { _index: number }>>();
+  (draft.visualBlocks ?? []).forEach((block, index) => {
+    const key = typeof block.afterSection === "number" ? block.afterSection : draft.sections.length - 1;
+    previewBlocksBySection.set(key, [...(previewBlocksBySection.get(key) ?? []), { ...block, _index: index }]);
+  });
+  const renderPreviewInsertions = (sectionIndex: number) => (
+    <>
+      {(previewTablesBySection.get(sectionIndex) ?? []).map((table) => (
+        <section key={`preview-table-${table._index}`}><h2>{table.heading || "Table"}</h2><div className="v4-table-wrap"><table className="v4-table"><thead><tr>{table.columns.map((column, index) => <th key={`preview-column-${index}`}>{column || "Column"}</th>)}</tr></thead><tbody>{table.rows.map((row, rowIndex) => <tr key={`preview-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`preview-cell-${rowIndex}-${columnIndex}`}>{row[columnIndex] || "—"}</td>)}</tr>)}</tbody></table></div></section>
+      ))}
+      {(previewBlocksBySection.get(sectionIndex) ?? []).map((block) => (
+        <section className={`draft-visual-block draft-visual-${block.type}`} key={`preview-visual-${block._index}`}><h2>{block.heading || block.type}</h2>{block.body ? <p>{block.body}</p> : null}{block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`preview-visual-item-${itemIndex}`}>{item}</li>)}</ul> : null}{block.source ? <small>{block.source}</small> : null}</section>
+      ))}
+    </>
+  );
 
   return (
     <main id="main" className="admin-page">
@@ -1062,6 +1082,9 @@ export function ArticleDraftEditor() {
                           placeholder="Название таблицы"
                           onChange={(event) => setDraft((current) => updateTable(current, tableIndex, (item) => ({ ...item, heading: event.target.value })))}
                         />
+                        <label className="admin-placement-field">После секции
+                          <input type="number" min={0} max={Math.max(0, draft.sections.length - 1)} value={table.afterSection ?? Math.max(0, draft.sections.length - 1)} onChange={(event) => setDraft((current) => updateTable(current, tableIndex, (item) => ({ ...item, afterSection: Number(event.target.value) })))} />
+                        </label>
                         <button type="button" className="button ghost" onClick={() => removeTable(tableIndex)}>Удалить таблицу</button>
                       </div>
                       <div className="admin-table-scroll">
@@ -1146,6 +1169,10 @@ export function ArticleDraftEditor() {
                         <label className="field">
                           <span>Заголовок</span>
                           <input value={block.heading} onChange={(event) => updateVisualBlock(blockIndex, { heading: event.target.value })} />
+                        </label>
+                        <label className="field">
+                          <span>После секции</span>
+                          <input type="number" min={0} max={Math.max(0, draft.sections.length - 1)} value={block.afterSection ?? Math.max(0, draft.sections.length - 1)} onChange={(event) => updateVisualBlock(blockIndex, { afterSection: Number(event.target.value) })} />
                         </label>
                       </div>
                       <textarea value={block.body} placeholder="Короткое объяснение" onChange={(event) => updateVisualBlock(blockIndex, { body: event.target.value })} />
@@ -1248,29 +1275,10 @@ export function ArticleDraftEditor() {
                 </p>
               </div>
               {draft.sections.map((section, index) => (
-                <section key={`${section.heading}-${index}`}>
-                  <h2>{section.heading}</h2>
-                  <p>{section.body || "Draft section text."}</p>
-                </section>
-              ))}
-              {(draft.tables ?? []).map((table, tableIndex) => (
-                <section key={`preview-table-${tableIndex}`}>
-                  <h2>{table.heading || "Table"}</h2>
-                  <div className="v4-table-wrap">
-                    <table className="v4-table">
-                      <thead><tr>{table.columns.map((column, index) => <th key={`preview-column-${index}`}>{column || "Column"}</th>)}</tr></thead>
-                      <tbody>{table.rows.map((row, rowIndex) => <tr key={`preview-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`preview-cell-${rowIndex}-${columnIndex}`}>{row[columnIndex] || "—"}</td>)}</tr>)}</tbody>
-                    </table>
-                  </div>
-                </section>
-              ))}
-              {(draft.visualBlocks ?? []).map((block, blockIndex) => (
-                <section className={`draft-visual-block draft-visual-${block.type}`} key={`preview-visual-${blockIndex}`}>
-                  <h2>{block.heading || block.type}</h2>
-                  {block.body ? <p>{block.body}</p> : null}
-                  {block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`preview-visual-item-${itemIndex}`}>{item}</li>)}</ul> : null}
-                  {block.source ? <small>{block.source}</small> : null}
-                </section>
+                <Fragment key={`${section.heading}-${index}`}>
+                  <section><h2>{section.heading}</h2><p>{section.body || "Draft section text."}</p></section>
+                  {renderPreviewInsertions(index)}
+                </Fragment>
               ))}
               <section>
                 <h2>{previewLabels[draft.locale].before}</h2>
