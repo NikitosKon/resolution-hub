@@ -91,6 +91,34 @@ function draftWordCount(parsed: Record<string, unknown>) {
   return values.filter((value): value is string => typeof value === "string").join(" ").split(/\s+/).filter(Boolean).length;
 }
 
+async function runQualityPass(apiKey: string, parsed: Record<string, unknown>) {
+  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      temperature: 0.1,
+      max_tokens: 7000,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: "You are the final senior editor for Resolution Hub. Never invent facts or sources." },
+        { role: "user", content: `Review this draft against a practical 10-point editorial rubric: factual caution (2), usefulness and completeness (2), clear single intent (1), natural Russian (1), non-repetitive structure (1), safe next steps (1), source boundaries (1), honest Telegram CTA (1). Target 8–10/10. Rewrite only where needed to reach that standard. Remove unsupported certainty, mixed-language fragments, repeated claims and generic filler. Keep the same JSON article shape, exactly one table, at least two visual blocks and 8–10 purposeful sections. Return JSON only: {"score":8,"improvements":["..."],"draft":{...}}. The score must reflect the revised draft, not optimism.\n\n${JSON.stringify(parsed)}` },
+      ],
+    }),
+  });
+  if (!response.ok) return null;
+  const result = (await response.json()) as { choices?: Array<{ message?: { content?: string } }> };
+  const content = result.choices?.[0]?.message?.content;
+  if (!content) return null;
+  const output = parseJson(content) as { score?: number; improvements?: string[]; draft?: Record<string, unknown> };
+  if (!output.draft || typeof output.score !== "number") return null;
+  return {
+    score: Math.max(1, Math.min(10, Math.round(output.score))),
+    improvements: Array.isArray(output.improvements) ? output.improvements.filter((item): item is string => typeof item === "string").slice(0, 5) : [],
+    draft: output.draft,
+  };
+}
+
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -233,7 +261,19 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
         }
       }
     }
-    return NextResponse.json({ draft: parsed, status: "draft", wordCount: draftWordCount(parsed) });
+    let qualityScore: number | undefined;
+    let qualityNotes: string[] = [];
+    for (let pass = 0; pass < 2; pass += 1) {
+      const quality = await runQualityPass(apiKey, parsed);
+      if (!quality) break;
+      parsed = { ...parsed, ...quality.draft };
+      if (officialSourceCandidates.length) parsed.officialSources = officialSourceCandidates.join("\n");
+      ensureEditorialBlocks(parsed);
+      qualityScore = quality.score;
+      qualityNotes = quality.improvements;
+      if (quality.score >= 8) break;
+    }
+    return NextResponse.json({ draft: parsed, status: "draft", wordCount: draftWordCount(parsed), qualityScore, qualityNotes });
   } catch {
     return NextResponse.json({ error: "Groq returned invalid JSON" }, { status: 502 });
   }
