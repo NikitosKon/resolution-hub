@@ -456,6 +456,11 @@ export function ArticlePage({
             />
           </div>
         </header>
+        <section className="section article-cta-inline article-cta-before-toc">
+          <div className="container">
+            <CaseReviewCTA locale={locale} title={telegramCopy.title} text={telegramCopy.text} />
+          </div>
+        </section>
         <div className="container article-layout">
           <TableOfContents
             locale={locale}
@@ -515,15 +520,6 @@ export function ArticlePage({
           <RelatedArticles issues={related} locale={locale} />
         </div>
       </section>
-      <section className="section article-cta-inline">
-        <div className="container">
-          <CaseReviewCTA
-            locale={locale}
-            title={telegramCopy.title}
-            text={telegramCopy.text}
-          />
-        </div>
-      </section>
     </main>
   );
 }
@@ -558,6 +554,11 @@ export function PublishedDraftPage({
             <LanguageLinks locale={locale} segments={[platform.slug, draft.slug]} />
           </div>
         </header>
+        <section className="section article-cta-inline article-cta-before-toc">
+          <div className="container">
+            <CaseReviewCTA locale={locale} title={locale === "ru" ? "Нужна помощь с вашей ситуацией?" : "Need help with your situation?"} text={draft.cta} />
+          </div>
+        </section>
         <div className="container article-layout">
           <TableOfContents locale={locale} hasDocuments={false} />
           <div className="prose">
@@ -570,7 +571,6 @@ export function PublishedDraftPage({
           </div>
         </div>
       </article>
-      <section className="section article-cta-inline"><div className="container"><CaseReviewCTA locale={locale} title={locale === "ru" ? "Нужна помощь с вашей ситуацией?" : "Need help with your situation?"} text={draft.cta} /></div></section>
     </main>
   );
 }
@@ -677,6 +677,11 @@ function V4ArticlePage({
             />
           </div>
         </header>
+        <section className="section article-cta-inline article-cta-before-toc">
+          <div className="container">
+            <CaseReviewCTA locale={locale} title={content.ctaTitle} text={content.ctaText} />
+          </div>
+        </section>
         <div className="container article-layout">
           <aside className="toc">
             <strong>{tocLabel}</strong>
@@ -724,15 +729,6 @@ function V4ArticlePage({
             <h2>{d.article.related}</h2>
           </div>
           <RelatedArticles issues={related} locale={locale} />
-        </div>
-      </section>
-      <section className="section article-cta-inline">
-        <div className="container">
-          <CaseReviewCTA
-            locale={locale}
-            title={content.ctaTitle}
-            text={content.ctaText}
-          />
         </div>
       </section>
     </main>
