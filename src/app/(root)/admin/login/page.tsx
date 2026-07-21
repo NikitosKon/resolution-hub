@@ -48,7 +48,6 @@ export default function AdminLoginPage() {
               autoComplete="username"
               value={login}
               onChange={(event) => setLogin(event.target.value)}
-              placeholder="Kon1337"
               required
             />
           </label>
