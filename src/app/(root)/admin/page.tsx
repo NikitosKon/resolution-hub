@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
 import { ArticleDraftEditor } from "@/components/admin/article-draft-editor";
 import { siteConfig } from "@/lib/config";
 
@@ -12,6 +11,5 @@ export const metadata: Metadata = {
 };
 
 export default function AdminPage() {
-  if (process.env.NODE_ENV === "production") notFound();
   return <ArticleDraftEditor />;
 }
