@@ -1908,6 +1908,82 @@ h3 {
   color: var(--accent-strong);
 }
 
+.admin-library-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px 180px;
+  gap: 10px;
+  margin: 24px 0;
+}
+
+.admin-library-filters input,
+.admin-library-filters select {
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.admin-library-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-library-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+}
+
+.admin-library-card h2,
+.admin-library-card p {
+  margin: 0;
+}
+
+.admin-library-card-top,
+.admin-library-card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-library-card-top {
+  justify-content: space-between;
+}
+
+.admin-library-status {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+  font-size: 0.75rem;
+}
+
+.status-published {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.admin-library-card small {
+  color: var(--muted);
+}
+
+.admin-library-card-actions .button {
+  min-height: 38px;
+  padding: 8px 12px;
+  font-size: 0.82rem;
+}
+
+.admin-library-card-actions .danger {
+  color: var(--danger);
+}
+
 .admin-remove {
   width: 28px;
   height: 28px;
@@ -2316,7 +2392,9 @@ h3 {
   .safety-grid,
   .admin-grid,
   .admin-utility-grid,
-  .template-grid {
+  .template-grid,
+  .admin-library-filters,
+  .admin-library-grid {
     grid-template-columns: 1fr;
   }
 

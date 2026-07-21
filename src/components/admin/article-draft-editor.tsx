@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
+import Link from "next/link";
 import { Download, FileText, LogOut, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
   createDraft,
@@ -132,6 +133,7 @@ export function ArticleDraftEditor() {
 
   useEffect(() => {
     let cancelled = false;
+    const requestedSlug = new URLSearchParams(window.location.search).get("slug");
     async function loadCloudDrafts() {
       try {
         const supabase = createSupabaseBrowserClient();
@@ -155,6 +157,11 @@ export function ArticleDraftEditor() {
             draft: item.draft as ArticleDraft,
           })),
         );
+        const requested = requestedSlug ? (data ?? []).find((item) => item.slug === requestedSlug) : null;
+        if (requested) {
+          setDraft(requested.draft as ArticleDraft);
+          setStatus((requested.status as ArticleStatus) || "draft");
+        }
         const { data: ideaData, error: ideaError } = await supabase
           .from("article_ideas")
           .select("id, title, platform, locale, primary_keyword, intent, priority, status, demand_evidence, source, source_checked_at")
@@ -220,6 +227,13 @@ export function ArticleDraftEditor() {
             parsedLibrary.map((item) => ({ ...item, status: item.status || "draft" })),
           ),
         );
+        const requested = requestedSlug ? parsedLibrary.find((item) => item.slug === requestedSlug) : null;
+        if (requested) {
+          requestAnimationFrame(() => {
+            setDraft(requested.draft);
+            setStatus(requested.status || "draft");
+          });
+        }
       } catch {
         localStorage.removeItem(libraryKey);
       }
@@ -584,6 +598,7 @@ export function ArticleDraftEditor() {
         </header>
 
         <div className="admin-actions">
+          <Link className="button secondary" href="/admin/library">Библиотека статей</Link>
           <button
             type="button"
             className="button secondary"
