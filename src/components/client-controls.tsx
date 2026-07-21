@@ -69,30 +69,26 @@ export function IssueSearch({
   platforms,
   placeholder,
   empty,
+  publishedDrafts = [],
 }: {
   locale: Locale;
   issues: IssuePage[];
   platforms: Platform[];
   placeholder: string;
   empty: string;
+  publishedDrafts?: Array<{ id: string; platformId: string; slug: string; title: string; keywords?: string[] }>;
 }) {
   const [query, setQuery] = useState("");
   const results = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase(locale);
-    if (!normalized) return issues;
-    return issues.filter((issue) => {
+    const staticResults = issues.filter((issue) => {
+      if (!normalized) return true;
       const platform = platforms.find((item) => item.id === issue.platformId);
-      const haystack = [
-        platform?.name,
-        issue.content[locale].title,
-        issue.keywords.primary,
-        ...issue.keywords.secondary,
-      ]
-        .join(" ")
-        .toLocaleLowerCase(locale);
-      return haystack.includes(normalized);
-    });
-  }, [query, issues, platforms, locale]);
+      return [platform?.name, issue.content[locale].title, issue.keywords.primary, ...issue.keywords.secondary].join(" ").toLocaleLowerCase(locale).includes(normalized);
+    }).map((issue) => ({ id: issue.id, platformId: issue.platformId, slug: issue.slug, title: issue.content[locale].title }));
+    const draftResults = publishedDrafts.filter((draft) => !normalized || [draft.title, ...(draft.keywords ?? [])].join(" ").toLocaleLowerCase(locale).includes(normalized));
+    return [...staticResults, ...draftResults];
+  }, [query, issues, platforms, locale, publishedDrafts]);
   return (
     <div>
       <div className="search-wrap">
@@ -119,7 +115,7 @@ export function IssueSearch({
                 href={`/${locale}/${issue.platformId}/${issue.slug}/`}
               >
                 <span className="meta">{platform?.name}</span>
-                <h3>{issue.content[locale].title}</h3>
+                <h3>{issue.title}</h3>
                 <span className="link-label">
                   {locale === "en"
                     ? "Read guide"

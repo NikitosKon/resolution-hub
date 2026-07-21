@@ -349,18 +349,14 @@ export async function PlatformPage({
             platforms={platforms}
             placeholder={`${d.category.search}: ${platform.name}`}
             empty={d.category.empty}
+            publishedDrafts={publishedDrafts.map((item) => ({
+              id: `draft-${item.slug}`,
+              platformId: platform.id,
+              slug: item.slug,
+              title: item.draft.translations?.[locale]?.title || item.draft.title,
+              keywords: [item.draft.primaryKeyword, item.draft.summary],
+            }))}
           />
-          {publishedDrafts.length ? (
-            <div className="grid issue-grid" aria-label="Published draft guides">
-              {publishedDrafts.map((item) => (
-                <Link className="card issue-card" key={item.slug} href={`/${locale}/${platform.slug}/${item.slug}/`}>
-                  <span className="meta">{platform.name}</span>
-                  <h3>{item.draft.translations?.[locale]?.title || item.draft.title}</h3>
-                  <span className="link-label">{locale === "en" ? "Read guide" : locale === "ru" ? "Читать" : "Читати"} →</span>
-                </Link>
-              ))}
-            </div>
-          ) : null}
         </div>
       </section>
       <section className="section tint">
