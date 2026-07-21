@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 const model = "llama-3.3-70b-versatile";
+const fallbackModel = "llama-3.1-8b-instant";
 
 const editorialPolicy = `Resolution Hub editorial policy (compiled from the project constitution and all role contracts):
 - Mission: help a stressed reader understand one specific marketplace or payment-account problem, assess what is known, prepare safely and choose the next step.
@@ -130,12 +131,12 @@ function draftWordCount(parsed: Record<string, unknown>) {
   return values.filter((value): value is string => typeof value === "string").join(" ").split(/\s+/).filter(Boolean).length;
 }
 
-async function runQualityPass(apiKey: string, parsed: Record<string, unknown>) {
+async function runQualityPass(apiKey: string, parsed: Record<string, unknown>, selectedModel = model) {
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model,
+      model: selectedModel,
       temperature: 0.1,
       max_tokens: 7000,
       response_format: { type: "json_object" },
@@ -229,26 +230,37 @@ Write the main article in Russian using natural Cyrillic Russian only. Do not in
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;
 
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  let selectedModel = model;
+  const requestBody = {
+    model: selectedModel,
+    temperature: 0.2,
+    max_tokens: 7000,
+    response_format: { type: "json_object" },
+    messages: [
+      {
+        role: "system",
+        content: "You are a careful editorial drafting assistant. Never fabricate facts.",
+      },
+      { role: "user", content: prompt },
+    ],
+  };
+  let response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      model,
-      temperature: 0.2,
-      max_tokens: 7000,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content: "You are a careful editorial drafting assistant. Never fabricate facts.",
-        },
-        { role: "user", content: prompt },
-      ],
-    }),
+    body: JSON.stringify(requestBody),
   });
+
+  if (!response.ok && response.status === 429) {
+    selectedModel = fallbackModel;
+    response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ ...requestBody, model: fallbackModel, max_tokens: 5000 }),
+    });
+  }
 
   if (!response.ok) {
     const upstream = await response.text().catch(() => "");
@@ -281,9 +293,9 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model,
+          model: selectedModel,
           temperature: 0.15,
-          max_tokens: 7000,
+          max_tokens: selectedModel === fallbackModel ? 5000 : 7000,
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: "You are a careful Resolution Hub senior editor. Expand only with useful, source-conscious detail. Never invent facts." },
@@ -307,7 +319,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
     let qualityScore: number | undefined;
     let qualityNotes: string[] = [];
     for (let pass = 0; pass < 1; pass += 1) {
-      const quality = await runQualityPass(apiKey, parsed);
+      const quality = await runQualityPass(apiKey, parsed, selectedModel);
       if (!quality) break;
       const currentWordCount = draftWordCount(parsed);
       const qualityCandidate = { ...parsed, ...quality.draft };
