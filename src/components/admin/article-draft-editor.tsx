@@ -488,7 +488,9 @@ export function ArticleDraftEditor() {
         summary: generated.summary || current.summary,
         quickAnswer: generated.quickAnswer || current.quickAnswer,
         sections: Array.isArray(generated.sections) ? generated.sections : current.sections,
-        tables: Array.isArray(generated.tables) ? generated.tables : (current.tables ?? []),
+        tables: Array.isArray(generated.tables) && generated.tables.length
+          ? generated.tables
+          : (current.tables ?? []),
         warnings: generated.warnings || current.warnings,
         officialSources: generated.officialSources || current.officialSources,
         faq: Array.isArray(generated.faq) ? generated.faq : current.faq,
