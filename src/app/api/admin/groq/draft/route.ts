@@ -81,7 +81,7 @@ Required section headings: ${(body.sectionHeadings ?? []).slice(0, 8).join(" | "
 
 Official source candidates (use only these URLs; do not invent other URLs): ${officialSourceCandidates.join(" | ") || "No catalog entry; leave officialSources empty."}
 
-Write the main article in Russian. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
+Write the main article in Russian using natural Cyrillic Russian only. Do not insert Chinese, Japanese, Korean or unexplained English fragments into the Russian title, summary, sections, warnings or FAQ. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
 {"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;

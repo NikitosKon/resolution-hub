@@ -57,6 +57,15 @@ function draftPlatformSlug(platform: string) {
   return platform.toLocaleLowerCase("en").replace(/[^a-z0-9]+/g, "-");
 }
 
+function cleanPublishedDraftText(value: string, locale: Locale) {
+  if (locale !== "ru") return value;
+  return value
+    .replace(/需要帮助/g, "нуждаетесь в помощи")
+    .replace(/[\u3400-\u9fff]+/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export async function HomePage({ locale }: { locale: Locale }) {
   const publishedDrafts = await listPublishedDrafts();
   const d = getDictionary(locale);
@@ -532,9 +541,9 @@ export function PublishedDraftPage({
 }) {
   const d = getDictionary(locale);
   const translation = draft.translations?.[locale];
-  const title = translation?.title || draft.title;
-  const summary = translation?.summary || draft.summary;
-  const quickAnswer = translation?.quickAnswer || draft.quickAnswer;
+  const title = cleanPublishedDraftText(translation?.title || draft.title, locale);
+  const summary = cleanPublishedDraftText(translation?.summary || draft.summary, locale);
+  const quickAnswer = cleanPublishedDraftText(translation?.quickAnswer || draft.quickAnswer, locale);
   const sources = draft.officialSources.split(/\r?\n/).map((source) => source.trim()).filter(Boolean);
   return (
     <main id="main">
@@ -553,10 +562,10 @@ export function PublishedDraftPage({
           <TableOfContents locale={locale} hasDocuments={false} />
           <div className="prose">
             <QuickAnswer title={d.article.quick}><p>{quickAnswer}</p></QuickAnswer>
-            {draft.sections.map((section, index) => <section key={`${section.heading}-${index}`}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
-            <section><h2>Before you continue</h2><p>{draft.warnings}</p></section>
+            {draft.sections.map((section, index) => <section key={`${section.heading}-${index}`}><h2>{cleanPublishedDraftText(section.heading, locale)}</h2><p>{cleanPublishedDraftText(section.body, locale)}</p></section>)}
+            <section><h2>{d.article.mistakes}</h2><p>{cleanPublishedDraftText(draft.warnings, locale)}</p></section>
             {sources.length ? <SourceList locale={locale} sources={sources} /> : null}
-            <section id="faq"><h2>{d.article.commonQuestions}</h2><FAQ items={draft.faq.map((item) => ({ question: item.heading, answer: item.body }))} /></section>
+            <section id="faq"><h2>{d.article.commonQuestions}</h2><FAQ items={draft.faq.map((item) => ({ question: cleanPublishedDraftText(item.heading, locale), answer: cleanPublishedDraftText(item.body, locale) }))} /></section>
             <Disclaimer locale={locale} />
           </div>
         </div>
