@@ -604,8 +604,8 @@ export function ArticleDraftEditor() {
           sectionHeadings: draft.sections.map((section) => section.heading),
         }),
       });
-      const result = (await response.json()) as { draft?: Partial<ArticleDraft>; error?: string; wordCount?: number; qualityScore?: number };
-      if (!response.ok || !result.draft) throw new Error(result.error || "Groq request failed");
+      const result = (await response.json()) as { draft?: Partial<ArticleDraft>; error?: string; detail?: string; wordCount?: number; qualityScore?: number };
+      if (!response.ok || !result.draft) throw new Error([result.error || "Groq request failed", result.detail].filter(Boolean).join(": "));
       const generated = result.draft;
       setDraft((current) => ({
         ...current,

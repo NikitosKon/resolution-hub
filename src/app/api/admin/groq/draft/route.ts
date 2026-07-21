@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const model = "llama-3.3-70b-versatile";
 
@@ -250,7 +251,8 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
   });
 
   if (!response.ok) {
-    return NextResponse.json({ error: "Groq request failed" }, { status: 502 });
+    const upstream = await response.text().catch(() => "");
+    return NextResponse.json({ error: "Groq request failed", detail: upstream.slice(0, 240) }, { status: 502 });
   }
 
   const result = (await response.json()) as {
@@ -268,7 +270,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
     }
     ensureEditorialBlocks(parsed);
     let expansionAttempt = 0;
-    while (draftWordCount(parsed) < 2000 && expansionAttempt < 5) {
+    while (draftWordCount(parsed) < 2000 && expansionAttempt < 3) {
       expansionAttempt += 1;
       const currentWordCount = draftWordCount(parsed);
       const missingWords = 2000 - currentWordCount;
@@ -304,7 +306,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
     }
     let qualityScore: number | undefined;
     let qualityNotes: string[] = [];
-    for (let pass = 0; pass < 2; pass += 1) {
+    for (let pass = 0; pass < 1; pass += 1) {
       const quality = await runQualityPass(apiKey, parsed);
       if (!quality) break;
       const currentWordCount = draftWordCount(parsed);
