@@ -70,7 +70,7 @@ export async function POST(request: Request) {
   const keyword = body.primaryKeyword?.trim().slice(0, 160) || title;
   const officialSourceCandidates = officialSourcesByPlatform[platform] ?? [];
 
-  const prompt = `Create a fact-conscious editorial draft for Resolution Hub.
+  const prompt = `Create a fact-conscious editorial draft for Resolution Hub in the same calm, practical editorial style as the guide “PayPal удерживает средства до 180 дней”.
 Platform: ${platform}
 Language: ${locale}
 Primary keyword: ${keyword}
@@ -80,6 +80,16 @@ Quick answer idea: ${body.quickAnswer?.slice(0, 500) || "not set"}
 Required section headings: ${(body.sectionHeadings ?? []).slice(0, 8).join(" | ")}
 
 Official source candidates (use only these URLs; do not invent other URLs): ${officialSourceCandidates.join(" | ") || "No catalog entry; leave officialSources empty."}
+
+Editorial requirements:
+- Answer the reader's exact problem before giving background.
+- Use a short, concrete quick answer followed by a clear sequence of checks and next steps.
+- Prefer headings that describe an action or decision: “Что означает уведомление”, “Сначала проверьте…”, “Что не подтверждает…”, “Что подготовить дальше”.
+- Separate confirmed platform rules from account-specific possibilities. Never imply that a check guarantees restoration, payout release or approval.
+- Explain what the reader should not assume, what evidence is useful, and when they must use the platform's own support or official help.
+- Keep paragraphs short (2–4 sentences), remove filler, repeated conclusions and generic introductions.
+- Include 5–8 distinct sections, one practical warning, and 3–5 genuinely useful common questions. Do not create a FAQ just to repeat the article.
+- The result should read like an edited Resolution Hub guide, not like a marketing post, chatbot answer or legal opinion.
 
 Write the main article in Russian using natural Cyrillic Russian only. Do not insert Chinese, Japanese, Korean or unexplained English fragments into the Russian title, summary, sections, warnings or FAQ. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
 {"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
