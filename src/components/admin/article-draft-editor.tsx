@@ -248,8 +248,8 @@ export function ArticleDraftEditor() {
             <p className="eyebrow">Resolution Hub internal</p>
             <h1>Article draft builder</h1>
             <p>
-              Local draft only. Nothing is published, sent or written into the
-              content pipeline from this screen.
+              Drafts stay private until you export and review them. Nothing is
+              published automatically from this screen.
             </p>
           </div>
           <div className="admin-status">
@@ -338,7 +338,7 @@ export function ArticleDraftEditor() {
           <section className="admin-card">
             <div className="admin-card-heading">
               <div>
-                <p className="eyebrow">Local only</p>
+                <p className="eyebrow">Workspace</p>
                 <h2>Draft library</h2>
               </div>
               <strong>{savedDrafts.length}</strong>
