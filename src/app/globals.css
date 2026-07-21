@@ -1661,6 +1661,26 @@ h3 {
   margin: 0;
 }
 
+.admin-operation-notice {
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.admin-operation-notice.success {
+  border-color: color-mix(in srgb, var(--success) 55%, var(--line));
+  color: var(--success);
+}
+
+.admin-operation-notice.error {
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--line));
+  color: var(--danger);
+}
+
 .admin-header {
   display: flex;
   align-items: end;

@@ -115,6 +115,8 @@ export function ArticleDraftEditor() {
   const [groqError, setGroqError] = useState("");
   const [publishBusy, setPublishBusy] = useState(false);
   const [publishMessage, setPublishMessage] = useState("");
+  const [operationMessage, setOperationMessage] = useState("");
+  const [operationTone, setOperationTone] = useState<"info" | "success" | "error">("info");
   const [ideas, setIdeas] = useState<ArticleIdea[]>([]);
   const [ideasError, setIdeasError] = useState("");
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
@@ -479,16 +481,24 @@ export function ArticleDraftEditor() {
     const checks = validateDraft(draft);
     const missing = checks.filter((check) => !check.ok).map((check) => check.label);
     if (!draft.title.trim() || !draft.slug.trim() || !draft.officialSources.trim()) {
-      setGroqError(`Перед публикацией заполни: ${[...missing, !draft.officialSources.trim() ? "Official sources" : ""].filter(Boolean).join(", ")}.`);
+      const missingMessage = `Перед публикацией заполни: ${[...missing, !draft.officialSources.trim() ? "Official sources" : ""].filter(Boolean).join(", ")}.`;
+      setGroqError(missingMessage);
+      setOperationTone("error");
+      setOperationMessage(missingMessage);
       setPublishMessage("");
       return;
     }
     setGroqError("");
     setPublishBusy(true);
     setPublishMessage("Публикую статью…");
+    setOperationTone("info");
+    setOperationMessage("Проверяю обязательные поля и сохраняю статью в Cloud library…");
     setStatus("published");
     const savedToCloud = await saveToLibrary("published");
-    setPublishMessage(savedToCloud ? "Статья опубликована в Cloud library. Публичный URL уже доступен после обновления страницы." : "Черновик сохранён локально. Cloud library недоступна, поэтому публичная публикация не выполнена.");
+    const resultMessage = savedToCloud ? "Статья опубликована в Cloud library. Публичный URL уже доступен после обновления страницы." : "Черновик сохранён локально. Cloud library недоступна, поэтому публичная публикация не выполнена.";
+    setPublishMessage(resultMessage);
+    setOperationTone(savedToCloud ? "success" : "error");
+    setOperationMessage(resultMessage);
     setPublishBusy(false);
   }
 
@@ -520,6 +530,8 @@ export function ArticleDraftEditor() {
   async function generateWithGroq() {
     setGroqBusy(true);
     setGroqError("");
+    setOperationTone("info");
+    setOperationMessage("Генерация началась: отправляю заголовок и структуру в Groq…");
     try {
       const response = await fetch("/api/admin/groq/draft", {
         method: "POST",
@@ -555,8 +567,13 @@ export function ArticleDraftEditor() {
         translations: { ...current.translations, ...(generated.translations || {}) },
       }));
       setStatus("draft");
+      setOperationTone("success");
+      setOperationMessage("Черновик готов. Проверь факты, официальные источники и язык перед публикацией.");
     } catch (error) {
-      setGroqError(error instanceof Error ? error.message : "Groq request failed");
+      const message = error instanceof Error ? error.message : "Groq request failed";
+      setGroqError(message);
+      setOperationTone("error");
+      setOperationMessage(`Генерация не завершилась: ${message}`);
     } finally {
       setGroqBusy(false);
     }
@@ -665,7 +682,8 @@ export function ArticleDraftEditor() {
           </button>
         </div>
         {groqError ? <p className="admin-form-error">{groqError}</p> : null}
-        {publishMessage ? <p className="admin-form-success">{publishMessage}</p> : null}
+        {operationMessage ? <p className={`admin-operation-notice ${operationTone}`} role="status" aria-live="polite">{operationMessage}</p> : null}
+        {publishMessage && publishMessage !== operationMessage ? <p className="admin-form-success">{publishMessage}</p> : null}
         <p className="admin-muted">
           Введи заголовок — Groq подготовит русскую статью и варианты EN/UK. Только черновик: не вводи пароли, коды подтверждения или полные документы.
         </p>
