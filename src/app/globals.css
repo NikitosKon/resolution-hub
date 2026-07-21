@@ -1239,6 +1239,50 @@ h3 {
   background: var(--accent-soft);
 }
 
+.draft-visual-block {
+  padding: 20px 22px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.draft-visual-block h2 {
+  margin-top: 0;
+}
+
+.draft-visual-block ul {
+  display: grid;
+  gap: 9px;
+  padding-left: 22px;
+}
+
+.draft-visual-block li {
+  color: #c0c6ce;
+}
+
+.draft-visual-checklist {
+  border-left: 3px solid var(--accent);
+}
+
+.draft-visual-timeline {
+  border-left: 3px solid var(--accent-strong);
+}
+
+.draft-visual-decision-tree {
+  border-left: 3px solid var(--success);
+}
+
+.draft-visual-callout {
+  border-left: 3px solid var(--warning);
+  background: var(--warning-soft);
+}
+
+.draft-visual-block small {
+  display: block;
+  margin-top: 14px;
+  color: var(--muted);
+}
+
 .v4-note strong {
   display: block;
   margin-bottom: 5px;

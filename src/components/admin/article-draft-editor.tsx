@@ -382,6 +382,20 @@ export function ArticleDraftEditor() {
     }));
   }
 
+  function updateVisualBlock(index: number, patch: Partial<NonNullable<ArticleDraft["visualBlocks"]>[number]>) {
+    setDraft((current) => ({
+      ...current,
+      visualBlocks: (current.visualBlocks ?? []).map((block, blockIndex) => blockIndex === index ? { ...block, ...patch } : block),
+    }));
+  }
+
+  function removeVisualBlock(index: number) {
+    setDraft((current) => ({
+      ...current,
+      visualBlocks: (current.visualBlocks ?? []).filter((_, blockIndex) => blockIndex !== index),
+    }));
+  }
+
   async function saveToLibrary(nextStatus: ArticleStatus = status) {
     const record: SavedDraft = {
       id: `${Date.now()}`,
@@ -491,6 +505,9 @@ export function ArticleDraftEditor() {
         tables: Array.isArray(generated.tables) && generated.tables.length
           ? generated.tables
           : (current.tables ?? []),
+        visualBlocks: Array.isArray(generated.visualBlocks) && generated.visualBlocks.length
+          ? generated.visualBlocks
+          : (current.visualBlocks ?? []),
         warnings: generated.warnings || current.warnings,
         officialSources: generated.officialSources || current.officialSources,
         faq: Array.isArray(generated.faq) ? generated.faq : current.faq,
@@ -961,6 +978,45 @@ export function ArticleDraftEditor() {
               )}
             </div>
 
+            <div className="admin-card">
+              <div className="admin-card-heading">
+                <div>
+                  <h2>Helpful visual blocks</h2>
+                  <p className="admin-muted">Groq выбирает блок только при наличии подтверждённого смысла. Здесь его можно проверить или удалить.</p>
+                </div>
+              </div>
+              {(draft.visualBlocks ?? []).length === 0 ? (
+                <p className="admin-muted">Для этой статьи отдельный визуальный блок не нужен.</p>
+              ) : (
+                <div className="admin-stack">
+                  {(draft.visualBlocks ?? []).map((block, blockIndex) => (
+                    <div className="admin-section-editor" key={`visual-${blockIndex}`}>
+                      <div className="form-grid">
+                        <label className="field">
+                          <span>Тип блока</span>
+                          <select value={block.type} onChange={(event) => updateVisualBlock(blockIndex, { type: event.target.value as typeof block.type })}>
+                            <option value="checklist">Чеклист</option>
+                            <option value="timeline">Таймлайн</option>
+                            <option value="decision-tree">Схема решения</option>
+                            <option value="callout">Предупреждение</option>
+                            <option value="source-card">Карточка источника</option>
+                          </select>
+                        </label>
+                        <label className="field">
+                          <span>Заголовок</span>
+                          <input value={block.heading} onChange={(event) => updateVisualBlock(blockIndex, { heading: event.target.value })} />
+                        </label>
+                      </div>
+                      <textarea value={block.body} placeholder="Короткое объяснение" onChange={(event) => updateVisualBlock(blockIndex, { body: event.target.value })} />
+                      <textarea value={block.items.join("\n")} placeholder="Один пункт на строку" onChange={(event) => updateVisualBlock(blockIndex, { items: event.target.value.split(/\r?\n/).filter(Boolean) })} />
+                      <input value={block.source ?? ""} placeholder="Источник, если нужен" onChange={(event) => updateVisualBlock(blockIndex, { source: event.target.value })} />
+                      <button type="button" className="button ghost" onClick={() => removeVisualBlock(blockIndex)}>Удалить блок</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="admin-card form-grid">
               <label className="field full">
                 <span>Warnings</span>
@@ -1060,6 +1116,14 @@ export function ArticleDraftEditor() {
                       <tbody>{table.rows.map((row, rowIndex) => <tr key={`preview-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`preview-cell-${rowIndex}-${columnIndex}`}>{row[columnIndex] || "—"}</td>)}</tr>)}</tbody>
                     </table>
                   </div>
+                </section>
+              ))}
+              {(draft.visualBlocks ?? []).map((block, blockIndex) => (
+                <section className={`draft-visual-block draft-visual-${block.type}`} key={`preview-visual-${blockIndex}`}>
+                  <h2>{block.heading || block.type}</h2>
+                  {block.body ? <p>{block.body}</p> : null}
+                  {block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`preview-visual-item-${itemIndex}`}>{item}</li>)}</ul> : null}
+                  {block.source ? <small>{block.source}</small> : null}
                 </section>
               ))}
               <section>

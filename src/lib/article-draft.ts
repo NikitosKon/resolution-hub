@@ -15,6 +15,16 @@ export type DraftTable = {
   rows: string[][];
 };
 
+export type DraftVisualBlockType = "checklist" | "timeline" | "decision-tree" | "callout" | "source-card";
+
+export type DraftVisualBlock = {
+  type: DraftVisualBlockType;
+  heading: string;
+  body: string;
+  items: string[];
+  source?: string;
+};
+
 export type DraftTranslation = {
   title: string;
   summary: string;
@@ -32,6 +42,7 @@ export type ArticleDraft = {
   quickAnswer: string;
   sections: DraftSection[];
   tables: DraftTable[];
+  visualBlocks: DraftVisualBlock[];
   warnings: string;
   faq: DraftSection[];
   officialSources: string;
@@ -151,6 +162,7 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
     quickAnswer: "",
     sections: template.sections.map((heading) => ({ heading, body: "" })),
     tables: [],
+    visualBlocks: [],
     warnings: "",
     faq: [
       { heading: "Can this be fixed?", body: "" },
@@ -183,6 +195,12 @@ export function draftToMarkdown(
     const rows = table.rows.map((row) => `| ${row.join(" | ")} |`).join("\n");
     return [`## ${table.heading || "Table"}`, header, divider, rows].join("\n");
   }).join("\n\n");
+  const visualBlocks = (draft.visualBlocks ?? []).map((block) => [
+    `## ${block.heading || block.type}`,
+    block.body || "",
+    ...(block.items.length ? [block.items.map((item) => `- ${item}`).join("\n")] : []),
+    block.source ? `Source: ${block.source}` : "",
+  ].filter(Boolean).join("\n\n")).join("\n\n");
   return [
     "---",
     `status: ${status}`,
@@ -200,6 +218,7 @@ export function draftToMarkdown(
     draft.quickAnswer || "[Draft]",
     sections,
     tables,
+    visualBlocks,
     "## Before you continue",
     draft.warnings || "[Draft]",
     "## Common questions",
