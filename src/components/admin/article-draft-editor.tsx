@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Download, FileText, Save, Trash2 } from "lucide-react";
+import { Download, FileText, LogOut, Save, Trash2 } from "lucide-react";
 import {
   createDraft,
   draftTemplates,
@@ -11,6 +11,7 @@ import {
   type DraftTemplateId,
 } from "@/lib/article-draft";
 import { locales, type Locale } from "@/lib/locales";
+import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const storageKey = "resolution-hub.article-draft";
 const libraryKey = "resolution-hub.article-drafts";
@@ -61,6 +62,8 @@ export function ArticleDraftEditor() {
     createDraft("restriction"),
   );
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
+  const [accountEmail, setAccountEmail] = useState("");
+  const [cloudReady, setCloudReady] = useState(false);
   const markdown = useMemo(() => draftToMarkdown(draft), [draft]);
   const wordCount = useMemo(
     () => markdown.split(/\s+/).filter(Boolean).length,
@@ -68,6 +71,36 @@ export function ArticleDraftEditor() {
   );
 
   useEffect(() => {
+    let cancelled = false;
+    async function loadCloudDrafts() {
+      try {
+        const supabase = createSupabaseBrowserClient();
+        const [{ data: userData }, { data, error }] = await Promise.all([
+          supabase.auth.getUser(),
+          supabase
+            .from("article_drafts")
+            .select("id, slug, title, draft, updated_at")
+            .order("updated_at", { ascending: false }),
+        ]);
+        if (error) throw error;
+        if (cancelled) return;
+        setAccountEmail(userData.user?.email ?? "");
+        setCloudReady(true);
+        setSavedDrafts(
+          (data ?? []).map((item) => ({
+            id: item.id as string,
+            title: item.title as string,
+            slug: item.slug as string,
+            updatedAt: item.updated_at as string,
+            draft: item.draft as ArticleDraft,
+          })),
+        );
+        return;
+      } catch {
+        // Keep the local library available if the database is not configured yet.
+      }
+    }
+    void loadCloudDrafts();
     const saved = localStorage.getItem(storageKey);
     const library = localStorage.getItem(libraryKey);
     let libraryFrame = 0;
@@ -88,6 +121,7 @@ export function ArticleDraftEditor() {
       localStorage.removeItem(storageKey);
     }
     return () => {
+      cancelled = true;
       cancelAnimationFrame(frame);
       cancelAnimationFrame(libraryFrame);
     };
@@ -100,7 +134,7 @@ export function ArticleDraftEditor() {
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
-  function saveToLibrary() {
+  async function saveToLibrary() {
     const record: SavedDraft = {
       id: `${Date.now()}`,
       title: draft.title || "Untitled guide",
@@ -112,12 +146,50 @@ export function ArticleDraftEditor() {
     setSavedDrafts(next);
     localStorage.setItem(libraryKey, JSON.stringify(next));
     localStorage.setItem(storageKey, JSON.stringify(draft));
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) return;
+      const { error } = await supabase.from("article_drafts").upsert(
+        {
+          owner_id: userData.user.id,
+          slug: record.slug,
+          title: record.title,
+          draft: record.draft,
+          updated_at: record.updatedAt,
+        },
+        { onConflict: "owner_id,slug" },
+      );
+      if (error) throw error;
+      setCloudReady(true);
+    } catch {
+      // LocalStorage remains a safe offline fallback.
+    }
   }
 
-  function removeSavedDraft(id: string) {
+  async function removeSavedDraft(id: string) {
     const next = savedDrafts.filter((item) => item.id !== id);
     setSavedDrafts(next);
     localStorage.setItem(libraryKey, JSON.stringify(next));
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { error } = await supabase
+        .from("article_drafts")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    } catch {
+      // LocalStorage remains a safe offline fallback.
+    }
+  }
+
+  async function signOut() {
+    try {
+      const supabase = createSupabaseBrowserClient();
+      await supabase.auth.signOut();
+    } finally {
+      window.location.assign("/admin/login");
+    }
   }
 
   function selectTemplate(templateId: DraftTemplateId) {
@@ -148,8 +220,9 @@ export function ArticleDraftEditor() {
             </p>
           </div>
           <div className="admin-status">
-            <span>Local draft</span>
+            <span>{cloudReady ? "Cloud library" : "Local draft"}</span>
             <strong>{wordCount} words</strong>
+            {accountEmail ? <small>{accountEmail}</small> : null}
           </div>
         </header>
 
@@ -161,6 +234,10 @@ export function ArticleDraftEditor() {
           >
             <Save size={16} aria-hidden="true" />
             Save to library
+          </button>
+          <button type="button" className="button secondary" onClick={signOut}>
+            <LogOut size={16} aria-hidden="true" />
+            Sign out
           </button>
           <button
             type="button"
