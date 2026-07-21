@@ -45,6 +45,11 @@ create policy "Owners can delete their drafts"
   to authenticated
   using (auth.uid() = owner_id);
 
+create policy "Published drafts are public"
+  on public.article_drafts for select
+  to anon, authenticated
+  using (status = 'published');
+
 create table if not exists public.article_ideas (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users(id) on delete cascade default auth.uid(),

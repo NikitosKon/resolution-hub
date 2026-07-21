@@ -35,6 +35,7 @@ import { pathFor } from "@/lib/urls";
 import { getV4Article } from "@/data/v4";
 import type { V4ArticleBlock, V4ArticleContent } from "@/data/v4/types";
 import { ArticleVisual } from "./article-visuals";
+import type { ArticleDraft } from "@/lib/article-draft";
 
 function estimateReadTime(issue: IssuePage, locale: Locale) {
   const words = JSON.stringify(issue.content[locale])
@@ -487,6 +488,53 @@ export function ArticlePage({
           />
         </div>
       </section>
+    </main>
+  );
+}
+
+export function PublishedDraftPage({
+  locale,
+  draft,
+  platform,
+  updatedAt,
+}: {
+  locale: Locale;
+  draft: ArticleDraft;
+  platform: Platform;
+  updatedAt: string;
+}) {
+  const d = getDictionary(locale);
+  const translation = draft.translations?.[locale];
+  const title = translation?.title || draft.title;
+  const summary = translation?.summary || draft.summary;
+  const quickAnswer = translation?.quickAnswer || draft.quickAnswer;
+  const sources = draft.officialSources.split(/\r?\n/).map((source) => source.trim()).filter(Boolean);
+  return (
+    <main id="main">
+      <Breadcrumbs locale={locale} items={[{ label: platform.name, href: `/${locale}/${platform.slug}/` }, { label: title }]} />
+      <article>
+        <header className="article-hero">
+          <div className="container">
+            <p className="eyebrow">{platform.name} · {draft.templateId}</p>
+            <h1>{title}</h1>
+            <p className="lede">{summary}</p>
+            <div className="article-meta"><LastReviewed locale={locale} date={updatedAt.slice(0, 10)} /><span>{d.article.status}</span></div>
+            <LanguageLinks locale={locale} segments={[platform.slug, draft.slug]} />
+          </div>
+        </header>
+        <div className="container article-layout">
+          <TableOfContents locale={locale} hasDocuments={false} />
+          <div className="prose">
+            <QuickAnswer title={d.article.quick}><p>{quickAnswer}</p></QuickAnswer>
+            {draft.sections.map((section, index) => <section key={`${section.heading}-${index}`}><h2>{section.heading}</h2><p>{section.body}</p></section>)}
+            <section><h2>Before you continue</h2><p>{draft.warnings}</p></section>
+            {sources.length ? <SourceList locale={locale} sources={sources} /> : null}
+            <section id="faq"><h2>{d.article.commonQuestions}</h2><FAQ items={draft.faq.map((item) => ({ question: item.heading, answer: item.body }))} /></section>
+            <Disclaimer locale={locale} />
+          </div>
+        </div>
+      </article>
+      <section className="section article-cta-inline"><div className="container"><CaseReviewCTA locale={locale} title={locale === "ru" ? "Нужна помощь с вашей ситуацией?" : "Need help with your situation?"} text={draft.cta} /></div></section>
     </main>
   );
 }

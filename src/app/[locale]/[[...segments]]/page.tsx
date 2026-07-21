@@ -20,9 +20,11 @@ import {
   type LegalSlug,
   PlatformPage,
   websiteJsonLd,
+  PublishedDraftPage,
 } from "@/components/pages";
 import { getDictionary } from "@/data/dictionaries";
 import { getV4Article } from "@/data/v4";
+import { getPublishedDraft } from "@/lib/published-drafts";
 
 type Props = { params: Promise<{ locale: string; segments?: string[] }> };
 const legalSlugs = [
@@ -36,6 +38,7 @@ const legalSlugs = [
 // Keep known locales dynamic so unpublished and unknown child routes reach the
 // localized not-found boundary while still returning a real 404 response.
 export const dynamicParams = true;
+export const dynamic = "force-dynamic";
 export function generateStaticParams() {
   return [
     { segments: [] },
@@ -109,6 +112,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
       });
     }
+    const platform = platformBySlug(segments[0]!);
+    const publishedDraft = platform ? await getPublishedDraft(segments[1]!) : null;
+    if (platform && publishedDraft) {
+      const translation = publishedDraft.draft.translations?.[locale];
+      return createMetadata({
+        locale,
+        segments,
+        title: translation?.title || publishedDraft.draft.title,
+        description: translation?.summary || publishedDraft.draft.summary,
+        article: { publishedTime: publishedDraft.updatedAt, modifiedTime: publishedDraft.updatedAt },
+      });
+    }
   }
   return { title: "Not found", robots: { index: false, follow: false } };
 }
@@ -143,6 +158,9 @@ export default async function CatchAllPage({ params }: Props) {
           <ArticlePage locale={locale} issue={issue} platform={platform} />
         </>
       );
+    const publishedDraft = platform ? await getPublishedDraft(segments[1]!) : null;
+    if (platform && publishedDraft)
+      return <PublishedDraftPage locale={locale} draft={publishedDraft.draft} platform={platform} updatedAt={publishedDraft.updatedAt} />;
   }
   notFound();
 }
