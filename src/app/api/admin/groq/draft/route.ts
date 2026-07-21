@@ -78,6 +78,13 @@ function removeUnsupportedNationalityClaims(parsed: Record<string, unknown>) {
       return { ...record, heading: clean(record.heading), body: clean(record.body), items: Array.isArray(record.items) ? record.items.map(clean) : record.items, source: clean(record.source) };
     });
   }
+  if (Array.isArray(parsed.images)) {
+    parsed.images = parsed.images.map((image) => {
+      if (!image || typeof image !== "object") return image;
+      const record = image as Record<string, unknown>;
+      return { ...record, alt: clean(record.alt), caption: clean(record.caption) };
+    });
+  }
 }
 
 function ensureEditorialBlocks(parsed: Record<string, unknown>) {
@@ -113,6 +120,7 @@ function ensureEditorialBlocks(parsed: Record<string, unknown>) {
     },
   ];
   parsed.visualBlocks = [...blocks, ...fallback].slice(0, 10);
+  parsed.images = (Array.isArray(parsed.images) ? parsed.images : []).slice(0, 8);
 }
 
 function draftWordCount(parsed: Record<string, unknown>) {
@@ -125,6 +133,7 @@ function draftWordCount(parsed: Record<string, unknown>) {
     ...sections.flatMap((item) => [item.heading, item.body]),
     ...tables.flatMap((table) => [table.heading, ...(Array.isArray(table.columns) ? table.columns : []), ...(Array.isArray(table.rows) ? table.rows.flat() : [])]),
     ...blocks.flatMap((block) => [block.heading, block.body, ...(Array.isArray(block.items) ? block.items : [])]),
+    ...(Array.isArray(parsed.images) ? parsed.images.flatMap((image) => [image.alt, image.caption]) : []),
     ...faq.flatMap((item) => [item.heading, item.body]),
   ];
   return values.filter((value): value is string => typeof value === "string").join(" ").split(/\s+/).filter(Boolean).length;
@@ -218,6 +227,7 @@ Editorial requirements:
 - Produce 8–10 distinct, non-overlapping sections for a full guide. Each section must answer a different reader question or move the reader to a different safe decision. Do not create headings merely to split one idea, and do not create a FAQ just to repeat the article. If the evidence cannot support a section, state the limitation instead of inventing detail.
 - Use 1–5 useful tables with short cells, only where a comparison, evidence map or check sequence is clearer than prose. Never invent statistics, national document requirements or platform rules.
 - Use 2–10 visual blocks from these types: checklist, timeline, decision-tree, callout, source-card. Choose the number and type from the article context; do not fill a quota. Place each table and visual block next to the section it explains using afterSection (zero-based section index). A timeline requires confirmed dates or stages; a source-card requires a real official URL; a decision-tree must use only facts already supported in the draft. A checklist and a caution callout are safe defaults when no other block is justified.
+- Add 0–8 images only when a screenshot, diagram or other visual genuinely clarifies the issue. Every image needs a public src, descriptive alt text, a short caption and an afterSection placement. Never invent screenshots, platform UI or owner evidence; leave images empty when no legitimate asset exists.
 - Never infer a reader's nationality, country, citizenship or document type. Do not mention Russian documents, “гражданин РФ” or any country-specific identity document unless the supplied official source explicitly requires it for the relevant market. Otherwise say that the exact requirement is shown in the account notice and must be verified with the platform.
 - Make the guide complete enough to solve the reader's immediate question. Add context, account-specific limits, safe next steps and what not to assume. Aim for substantial depth when evidence supports it, but never repeat the same point or pad the article.
 - The Russian article body should contain at least 2,000 useful words before translations when the evidence supports that depth. Reach length with relevant explanations, distinctions, preparation details, uncertainty and questions—not repetition or invented facts.
@@ -225,7 +235,7 @@ Editorial requirements:
 - The result should read like an edited Resolution Hub guide, not like a marketing post, chatbot answer or legal opinion.
 
 Write the main article in Russian using natural Cyrillic Russian only. Do not insert Chinese, Japanese, Korean or unexplained English fragments into the Russian title, summary, sections, warnings or FAQ. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
-{"title":"","summary":"","quickAnswer":"","cta":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]],"afterSection":0}],"visualBlocks":[{"type":"checklist","heading":"","body":"","items":[""],"source":"","afterSection":0},{"type":"callout","heading":"","body":"","items":[],"source":"","afterSection":1}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
+{"title":"","summary":"","quickAnswer":"","cta":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]],"afterSection":0}],"visualBlocks":[{"type":"checklist","heading":"","body":"","items":[""],"source":"","afterSection":0},{"type":"callout","heading":"","body":"","items":[],"source":"","afterSection":1}],"images":[{"src":"","alt":"","caption":"","afterSection":0}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;
 
@@ -288,7 +298,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: "You are a careful Resolution Hub senior editor. Expand only with useful, source-conscious detail. Never invent facts." },
-            { role: "user", content: `This draft currently contains ${currentWordCount} words. Expand it by at least ${missingWords + 150} useful words and reach at least 2,000 words total where the evidence supports that depth. Preserve all existing facts, uncertainty, sources, warnings and intent. Add relevant explanations, distinctions, safe preparation steps, mistake prevention and genuinely useful FAQ answers. Keep 8–10 distinct sections with no repeated purpose. Do not repeat paragraphs, add statistics, invent platform rules, list documents unless the official source supports them, create cases or promise outcomes. Use 1–5 contextual tables and 2–10 contextual visual blocks only when they add information, each with an afterSection placement. Return the same JSON shape only.\n\n${JSON.stringify(parsed)}` },
+            { role: "user", content: `This draft currently contains ${currentWordCount} words. Expand it by at least ${missingWords + 150} useful words and reach at least 2,000 words total where the evidence supports that depth. Preserve all existing facts, uncertainty, sources, warnings, images and intent. Add relevant explanations, distinctions, safe preparation steps, mistake prevention and genuinely useful FAQ answers. Keep 8–10 distinct sections with no repeated purpose. Do not repeat paragraphs, add statistics, invent platform rules, list documents unless the official source supports them, create cases or promise outcomes. Use 1–5 contextual tables, 2–10 contextual visual blocks and 0–8 legitimate images only when they add information, each with an afterSection placement. Return the same JSON shape only.\n\n${JSON.stringify(parsed)}` },
           ],
         }),
       });

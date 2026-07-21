@@ -552,10 +552,16 @@ export function PublishedDraftPage({
     const key = typeof block.afterSection === "number" ? block.afterSection : draft.sections.length - 1;
     blocksBySection.set(key, [...(blocksBySection.get(key) ?? []), { ...block, _index: index }]);
   });
+  const imagesBySection = new Map<number, Array<(typeof draft.images)[number] & { _index: number }>>();
+  (draft.images ?? []).forEach((image, index) => {
+    const key = typeof image.afterSection === "number" ? image.afterSection : draft.sections.length - 1;
+    imagesBySection.set(key, [...(imagesBySection.get(key) ?? []), { ...image, _index: index }]);
+  });
   const contextualBlocks = (sectionIndex: number) => (
     <>
       {(tablesBySection.get(sectionIndex) ?? []).map((table) => <section key={`table-${table._index}`}><h2>{cleanPublishedDraftText(table.heading, locale) || "Table"}</h2><div className="v4-table-wrap"><table className="v4-table"><thead><tr>{table.columns.map((column, columnIndex) => <th key={`table-column-${columnIndex}`}>{cleanPublishedDraftText(column, locale)}</th>)}</tr></thead><tbody>{table.rows.map((row, rowIndex) => <tr key={`table-row-${rowIndex}`}>{table.columns.map((_, columnIndex) => <td key={`table-cell-${rowIndex}-${columnIndex}`}>{cleanPublishedDraftText(row[columnIndex] ?? "", locale)}</td>)}</tr>)}</tbody></table></div></section>)}
       {(blocksBySection.get(sectionIndex) ?? []).map((block) => <section className={`draft-visual-block draft-visual-${block.type}`} key={`visual-${block._index}`}><h2>{cleanPublishedDraftText(block.heading, locale) || block.type}</h2>{block.body ? <p>{cleanPublishedDraftText(block.body, locale)}</p> : null}{block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`visual-item-${itemIndex}`}>{cleanPublishedDraftText(item, locale)}</li>)}</ul> : null}{block.source ? <small>{cleanPublishedDraftText(block.source, locale)}</small> : null}</section>)}
+      {(imagesBySection.get(sectionIndex) ?? []).map((image) => image.src ? <figure className="article-draft-image" key={`image-${image._index}`}><img src={image.src} alt={cleanPublishedDraftText(image.alt || "Иллюстрация", locale)} />{image.caption ? <figcaption>{cleanPublishedDraftText(image.caption, locale)}</figcaption> : null}</figure> : null)}
     </>
   );
   return (

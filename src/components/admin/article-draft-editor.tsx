@@ -34,14 +34,14 @@ type SavedDraft = {
 type ArticleStatus = "draft" | "review" | "approved" | "published";
 
 const articleStatuses: Array<{ value: ArticleStatus; label: string }> = [
-  { value: "draft", label: "Draft" },
-  { value: "review", label: "Review" },
-  { value: "approved", label: "Approved" },
-  { value: "published", label: "Published" },
+  { value: "draft", label: "Черновик" },
+  { value: "review", label: "На проверке" },
+  { value: "approved", label: "Одобрено" },
+  { value: "published", label: "Опубликовано" },
 ];
 
 const previewLabels: Record<Locale, { before: string; questions: string }> = {
-  en: { before: "Before you continue", questions: "Common questions" },
+  en: { before: "Перед тем как продолжить", questions: "Частые вопросы" },
   ru: { before: "Перед тем как продолжить", questions: "Частые вопросы" },
   uk: { before: "Перед тим як продовжити", questions: "Поширені запитання" },
 };
@@ -488,6 +488,21 @@ export function ArticleDraftEditor() {
     }));
   }
 
+  function addImage() {
+    setDraft((current) => ({
+      ...current,
+      images: [...(current.images ?? []), { src: "", alt: "", caption: "", afterSection: Math.max(0, current.sections.length - 1) }],
+    }));
+  }
+
+  function updateImage(index: number, patch: Partial<NonNullable<ArticleDraft["images"]>[number]>) {
+    setDraft((current) => ({ ...current, images: (current.images ?? []).map((image, imageIndex) => imageIndex === index ? { ...image, ...patch } : image) }));
+  }
+
+  function removeImage(index: number) {
+    setDraft((current) => ({ ...current, images: (current.images ?? []).filter((_, imageIndex) => imageIndex !== index) }));
+  }
+
   async function saveToLibrary(nextStatus: ArticleStatus = status) {
     const record: SavedDraft = {
       id: `${Date.now()}`,
@@ -622,6 +637,7 @@ export function ArticleDraftEditor() {
         visualBlocks: Array.isArray(generated.visualBlocks) && generated.visualBlocks.length
           ? generated.visualBlocks
           : (current.visualBlocks ?? []),
+        images: Array.isArray(generated.images) ? generated.images : (current.images ?? []),
         warnings: generated.warnings || current.warnings,
         officialSources: generated.officialSources || current.officialSources,
         faq: Array.isArray(generated.faq) ? generated.faq : current.faq,
@@ -668,6 +684,11 @@ export function ArticleDraftEditor() {
     const key = typeof block.afterSection === "number" ? block.afterSection : draft.sections.length - 1;
     previewBlocksBySection.set(key, [...(previewBlocksBySection.get(key) ?? []), { ...block, _index: index }]);
   });
+  const previewImagesBySection = new Map<number, Array<(typeof draft.images)[number] & { _index: number }>>();
+  (draft.images ?? []).forEach((image, index) => {
+    const key = typeof image.afterSection === "number" ? image.afterSection : draft.sections.length - 1;
+    previewImagesBySection.set(key, [...(previewImagesBySection.get(key) ?? []), { ...image, _index: index }]);
+  });
   const renderPreviewInsertions = (sectionIndex: number) => (
     <>
       {(previewTablesBySection.get(sectionIndex) ?? []).map((table) => (
@@ -676,6 +697,7 @@ export function ArticleDraftEditor() {
       {(previewBlocksBySection.get(sectionIndex) ?? []).map((block) => (
         <section className={`draft-visual-block draft-visual-${block.type}`} key={`preview-visual-${block._index}`}><h2>{block.heading || block.type}</h2>{block.body ? <p>{block.body}</p> : null}{block.items.length ? <ul>{block.items.map((item, itemIndex) => <li key={`preview-visual-item-${itemIndex}`}>{item}</li>)}</ul> : null}{block.source ? <small>{block.source}</small> : null}</section>
       ))}
+      {(previewImagesBySection.get(sectionIndex) ?? []).map((image) => image.src ? <figure className="admin-preview-image" key={`preview-image-${image._index}`}><img src={image.src} alt={image.alt || "Иллюстрация"} />{image.caption ? <figcaption>{image.caption}</figcaption> : null}</figure> : null)}
     </>
   );
 
@@ -855,7 +877,7 @@ export function ArticleDraftEditor() {
             <div className="admin-card-heading">
               <div>
                 <p className="eyebrow">Before review</p>
-                <h2>Local preflight</h2>
+                <h2>Предварительная проверка</h2>
               </div>
               <strong>{passedChecks}/{checks.length}</strong>
             </div>
@@ -881,8 +903,8 @@ export function ArticleDraftEditor() {
           <section id="admin-library" className="admin-card">
             <div className="admin-card-heading">
               <div>
-                <p className="eyebrow">Workspace</p>
-                <h2>Draft library</h2>
+                <p className="eyebrow">Рабочая область</p>
+                <h2>Библиотека черновиков</h2>
               </div>
               <strong>{savedDrafts.length}</strong>
             </div>
@@ -927,7 +949,7 @@ export function ArticleDraftEditor() {
           >
             <CollapsibleAdminPanel title="Шаблон статьи">
               <div className="admin-card">
-              <h2>Template</h2>
+              <h2>Шаблон</h2>
               <div className="template-grid">
                 {(Object.keys(draftTemplates) as DraftTemplateId[]).map(
                   (templateId) => (
@@ -952,7 +974,7 @@ export function ArticleDraftEditor() {
             <CollapsibleAdminPanel title="Основные поля">
               <div className="admin-card form-grid">
               <label className="field">
-                <span>Language</span>
+                <span>Язык</span>
                 <select
                   value={draft.locale}
                   onChange={(event) =>
@@ -967,7 +989,7 @@ export function ArticleDraftEditor() {
                 </select>
               </label>
               <label className="field">
-                <span>Article status</span>
+                <span>Статус статьи</span>
                 <select
                   value={status}
                   onChange={(event) => setStatus(event.target.value as ArticleStatus)}
@@ -980,14 +1002,14 @@ export function ArticleDraftEditor() {
                 </select>
               </label>
               <label className="field">
-                <span>Platform</span>
+                <span>Платформа</span>
                 <input
                   value={draft.platform}
                   onChange={(event) => setField("platform", event.target.value)}
                 />
               </label>
               <label className="field">
-                <span>Primary keyword</span>
+                <span>Основной запрос</span>
                 <input
                   value={draft.primaryKeyword}
                   onChange={(event) =>
@@ -996,7 +1018,7 @@ export function ArticleDraftEditor() {
                 />
               </label>
               <label className="field">
-                <span>Slug</span>
+                <span>Адрес страницы</span>
                 <input
                   value={draft.slug}
                   onChange={(event) =>
@@ -1005,7 +1027,7 @@ export function ArticleDraftEditor() {
                 />
               </label>
               <label className="field full">
-                <span>Title</span>
+                <span>Заголовок</span>
                 <input
                   value={draft.title}
                   onChange={(event) => {
@@ -1016,14 +1038,14 @@ export function ArticleDraftEditor() {
                 />
               </label>
               <label className="field full">
-                <span>Summary</span>
+                <span>Краткое описание</span>
                 <textarea
                   value={draft.summary}
                   onChange={(event) => setField("summary", event.target.value)}
                 />
               </label>
               <label className="field full">
-                <span>Quick answer</span>
+                <span>Короткий ответ</span>
                 <textarea
                   value={draft.quickAnswer}
                   onChange={(event) =>
@@ -1036,7 +1058,7 @@ export function ArticleDraftEditor() {
 
             <CollapsibleAdminPanel title="Языковые версии">
               <div className="admin-card">
-              <h2>Language versions</h2>
+              <h2>Языковые версии</h2>
               <p className="admin-muted">
                 Keep one article identity while preparing separate RU, EN and UK copy.
               </p>
@@ -1067,7 +1089,7 @@ export function ArticleDraftEditor() {
 
             <CollapsibleAdminPanel title="Основной текст гайда">
               <div className="admin-card">
-              <h2>Guide body</h2>
+              <h2>Основной текст гайда</h2>
               <div className="admin-stack">
                 {draft.sections.map((section, index) => (
                   <div
@@ -1123,7 +1145,7 @@ export function ArticleDraftEditor() {
               <div className="admin-card">
               <div className="admin-card-heading">
                 <div>
-                  <h2>Structured tables</h2>
+                  <h2>Таблицы</h2>
                   <p className="admin-muted">Добавляй таблицы для сравнений, проверок, документов и следующих шагов.</p>
                 </div>
                 <button type="button" className="button secondary" onClick={addTable}>Добавить таблицу</button>
@@ -1203,7 +1225,7 @@ export function ArticleDraftEditor() {
               <div className="admin-card">
               <div className="admin-card-heading">
                 <div>
-                  <h2>Helpful visual blocks</h2>
+                  <h2>Визуальные блоки</h2>
                   <p className="admin-muted">Groq выбирает блок только при наличии подтверждённого смысла. Здесь его можно проверить или удалить.</p>
                 </div>
               </div>
@@ -1244,17 +1266,45 @@ export function ArticleDraftEditor() {
               </div>
             </CollapsibleAdminPanel>
 
+            <CollapsibleAdminPanel title="Изображения">
+              <div className="admin-card">
+                <div className="admin-card-heading">
+                  <div>
+                    <h2>Изображения и скриншоты</h2>
+                    <p className="admin-muted">Добавляй только реальные изображения или официальные скриншоты. Для каждого нужны ссылка, alt-текст, подпись и место вставки.</p>
+                  </div>
+                  <button type="button" className="button secondary" onClick={addImage}>Добавить изображение</button>
+                </div>
+                {(draft.images ?? []).length === 0 ? <p className="admin-muted">Изображения пока не добавлены.</p> : (
+                  <div className="admin-stack">
+                    {(draft.images ?? []).map((image, imageIndex) => (
+                      <div className="admin-section-editor" key={`image-${imageIndex}`}>
+                        <div className="form-grid">
+                          <label className="field full"><span>Ссылка на изображение</span><input value={image.src} placeholder="https://..." onChange={(event) => updateImage(imageIndex, { src: event.target.value })} /></label>
+                          <label className="field"><span>Alt-текст</span><input value={image.alt} placeholder="Что изображено" onChange={(event) => updateImage(imageIndex, { alt: event.target.value })} /></label>
+                          <label className="field"><span>После секции</span><input type="number" min={0} max={Math.max(0, draft.sections.length - 1)} value={image.afterSection ?? Math.max(0, draft.sections.length - 1)} onChange={(event) => updateImage(imageIndex, { afterSection: Number(event.target.value) })} /></label>
+                          <label className="field full"><span>Подпись</span><input value={image.caption} placeholder="Коротко объясни, зачем это изображение" onChange={(event) => updateImage(imageIndex, { caption: event.target.value })} /></label>
+                        </div>
+                        {image.src ? <img className="admin-image-thumb" src={image.src} alt={image.alt || "Предпросмотр изображения"} /> : null}
+                        <button type="button" className="button ghost" onClick={() => removeImage(imageIndex)}>Удалить изображение</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </CollapsibleAdminPanel>
+
             <CollapsibleAdminPanel title="Предупреждение, источники и CTA">
               <div className="admin-card form-grid">
               <label className="field full">
-                <span>Warnings</span>
+                <span>Предупреждение</span>
                 <textarea
                   value={draft.warnings}
                   onChange={(event) => setField("warnings", event.target.value)}
                 />
               </label>
               <label className="field full">
-                <span>Official sources</span>
+                <span>Официальные источники</span>
                 <textarea
                   value={draft.officialSources}
                   onChange={(event) =>
@@ -1263,7 +1313,7 @@ export function ArticleDraftEditor() {
                 />
               </label>
               <label className="field full">
-                <span>Telegram CTA</span>
+                <span>Призыв к Telegram</span>
                 <textarea
                   value={draft.cta}
                   onChange={(event) => setField("cta", event.target.value)}
@@ -1274,7 +1324,7 @@ export function ArticleDraftEditor() {
 
             <CollapsibleAdminPanel title="Частые вопросы">
               <div className="admin-card">
-              <h2>Common questions</h2>
+              <h2>Частые вопросы</h2>
               <div className="admin-stack">
                 {draft.faq.map((item, index) => (
                   <div

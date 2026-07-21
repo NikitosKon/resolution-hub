@@ -30,6 +30,13 @@ export type DraftVisualBlock = {
   afterSection?: number;
 };
 
+export type DraftImage = {
+  src: string;
+  alt: string;
+  caption: string;
+  afterSection?: number;
+};
+
 export type DraftTranslation = {
   title: string;
   summary: string;
@@ -48,6 +55,7 @@ export type ArticleDraft = {
   sections: DraftSection[];
   tables: DraftTable[];
   visualBlocks: DraftVisualBlock[];
+  images: DraftImage[];
   warnings: string;
   faq: DraftSection[];
   officialSources: string;
@@ -69,6 +77,7 @@ export function draftWordCount(draft: ArticleDraft) {
     ...draft.sections.flatMap((section) => [section.heading, section.body]),
     ...(draft.tables ?? []).flatMap((table) => [table.heading, ...table.columns, ...table.rows.flat()]),
     ...(draft.visualBlocks ?? []).flatMap((block) => [block.heading, block.body, ...block.items]),
+    ...(draft.images ?? []).flatMap((image) => [image.alt, image.caption]),
     draft.warnings,
     ...draft.faq.flatMap((item) => [item.heading, item.body]),
   ];
@@ -150,43 +159,43 @@ export const draftTemplates: Record<
   { label: string; sections: string[] }
 > = {
   restriction: {
-    label: "Account restriction",
+    label: "Ограничение аккаунта",
     sections: [
-      "What the notice means",
-      "What to check first",
-      "Documents or evidence to prepare",
-      "Mistakes to avoid",
-      "When to contact support",
+      "Что означает уведомление",
+      "Что проверить сначала",
+      "Какие сведения подготовить",
+      "Каких ошибок избежать",
+      "Когда обращаться в поддержку",
     ],
   },
   verification: {
-    label: "Verification issue",
+    label: "Проблема с проверкой",
     sections: [
-      "What is being verified",
-      "How to read the request",
-      "Evidence that may be relevant",
-      "Submission mistakes",
-      "What remains account-specific",
+      "Что именно проверяется",
+      "Как понять запрос платформы",
+      "Какие сведения могут понадобиться",
+      "Ошибки при отправке",
+      "Что зависит от конкретного аккаунта",
     ],
   },
   "payout-hold": {
-    label: "Payout hold",
+    label: "Задержка выплаты",
     sections: [
-      "What is held",
-      "Events that may affect the timeline",
-      "What to check in the account",
-      "What not to assume",
-      "Next safe steps",
+      "Что именно удерживается",
+      "Какие события могут влиять на срок",
+      "Что проверить в аккаунте",
+      "Чего не следует предполагать",
+      "Безопасные следующие шаги",
     ],
   },
   appeal: {
-    label: "Appeal preparation",
+    label: "Подготовка обращения",
     sections: [
-      "What decision is being appealed",
-      "Facts to collect",
-      "Evidence to organize",
-      "Appeal message structure",
-      "Risks before submitting",
+      "Какое решение вы обжалуете",
+      "Какие факты собрать",
+      "Как организовать сведения",
+      "Структура обращения",
+      "Риски перед отправкой",
     ],
   },
 };
@@ -205,11 +214,12 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
     sections: template.sections.map((heading) => ({ heading, body: "", factChecked: false })),
     tables: [],
     visualBlocks: [],
+    images: [],
     warnings: "",
     faq: [
-      { heading: "Can this be fixed?", body: "" },
-      { heading: "How long can it take?", body: "" },
-      { heading: "What should I send first?", body: "" },
+      { heading: "Можно ли решить эту проблему?", body: "" },
+      { heading: "Сколько это может занять?", body: "" },
+      { heading: "Что отправить сначала?", body: "" },
     ],
     officialSources: "",
     cta: "Если ситуация остаётся неясной, можно попросить индивидуальный разбор в Telegram: @helpgrailed. Результат не гарантируется.",
@@ -244,6 +254,12 @@ export function draftToMarkdown(
     ...(block.items.length ? [block.items.map((item) => `- ${item}`).join("\n")] : []),
     block.source ? `Source: ${block.source}` : "",
   ].filter(Boolean).join("\n\n")).join("\n\n");
+  const images = (draft.images ?? []).map((image) => [
+    "## Изображение",
+    image.afterSection !== undefined ? `Insert after section: ${image.afterSection + 1}` : "",
+    `![${image.alt || "Иллюстрация"}](${image.src})`,
+    image.caption || "",
+  ].filter(Boolean).join("\n\n")).join("\n\n");
   return [
     "---",
     `status: ${status}`,
@@ -262,6 +278,7 @@ export function draftToMarkdown(
     sections,
     tables,
     visualBlocks,
+    images,
     "## Before you continue",
     draft.warnings || "[Draft]",
     "## Common questions",
