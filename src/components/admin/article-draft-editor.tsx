@@ -11,6 +11,7 @@ import {
   type DraftTemplateId,
 } from "@/lib/article-draft";
 import { locales, type Locale } from "@/lib/locales";
+import { articleIdeaCriteria, starterArticleIdeas, type ArticleIdea } from "@/lib/article-ideas";
 import { createSupabaseBrowserClient } from "@/lib/supabase/browser";
 
 const storageKey = "resolution-hub.article-draft";
@@ -27,20 +28,6 @@ type SavedDraft = {
 };
 
 type ArticleStatus = "draft" | "review" | "approved" | "published";
-
-type ArticleIdea = {
-  id: string;
-  title: string;
-  platform: string;
-  locale: Locale;
-  primaryKeyword: string;
-  intent: string;
-  priority: "high" | "medium" | "low";
-  status: "new" | "planned" | "used" | "archived";
-  demandEvidence: string;
-  source: string;
-  sourceCheckedAt: string;
-};
 
 const articleStatuses: Array<{ value: ArticleStatus; label: string }> = [
   { value: "draft", label: "Draft" },
@@ -131,7 +118,7 @@ export function ArticleDraftEditor() {
           .order("priority", { ascending: true })
           .order("created_at", { ascending: false });
         if (ideaError) throw ideaError;
-        setIdeas((ideaData ?? []).map((item) => ({
+        const cloudIdeas = (ideaData ?? []).map((item) => ({
           id: item.id as string,
           title: item.title as string,
           platform: item.platform as string,
@@ -143,10 +130,34 @@ export function ArticleDraftEditor() {
           demandEvidence: item.demand_evidence as string,
           source: item.source as string,
           sourceCheckedAt: (item.source_checked_at as string) || "",
-        })));
+        }));
+        if (cloudIdeas.length) setIdeas(cloudIdeas);
+        else {
+          const seeded = starterArticleIdeas.map((idea, index) => ({ ...idea, id: `seed-${index}`, status: "new" as const }));
+          setIdeas(seeded);
+          setIdeasError("Стартовые идеи загружены. Их приоритет нужно подтвердить данными Google перед публикацией.");
+          const { error: seedError } = await supabase.from("article_ideas").upsert(seeded.map((idea) => ({
+            owner_id: userData.user.id,
+            title: idea.title,
+            platform: idea.platform,
+            locale: idea.locale,
+            primary_keyword: idea.primaryKeyword,
+            intent: idea.intent,
+            priority: idea.priority,
+            status: idea.status,
+            demand_evidence: idea.demandEvidence,
+            source: idea.source,
+            source_checked_at: idea.sourceCheckedAt,
+            updated_at: new Date().toISOString(),
+          })), { onConflict: "owner_id,title" });
+          if (seedError) setIdeasError("Стартовые идеи загружены локально. Проверь права таблицы article_ideas в Supabase.");
+        }
         return;
       } catch {
         // Keep the local library available if the database is not configured yet.
+        const seeded = starterArticleIdeas.map((idea, index) => ({ ...idea, id: `seed-${index}`, status: "new" as const }));
+        setIdeas((current) => current.length ? current : seeded);
+        setIdeasError("Стартовые идеи загружены локально. Выполни SQL-миграцию, чтобы хранить их в Cloud library.");
       }
     }
     void loadCloudDrafts();
@@ -502,6 +513,12 @@ export function ArticleDraftEditor() {
           <p className="admin-muted">
             Импортируй запросы из Search Console, Trends или Keyword Planner. Популярность — сигнал для приоритета, не доказательство правила платформы.
           </p>
+          <details className="admin-idea-criteria">
+            <summary>Критерии сортировки идей</summary>
+            <ul>
+              {articleIdeaCriteria.map((criterion) => <li key={criterion}>{criterion}</li>)}
+            </ul>
+          </details>
           {ideasError ? <p className="admin-form-error">{ideasError}</p> : null}
           {ideas.length === 0 ? (
             <p className="admin-muted">Пока нет идей. CSV должен начинаться с `title`; также можно указать platform, language, keyword, intent, priority, demand, source.</p>

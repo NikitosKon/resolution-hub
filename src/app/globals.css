@@ -1701,6 +1701,25 @@ h3 {
   margin-top: 16px;
 }
 
+.admin-idea-criteria {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.admin-idea-criteria summary {
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.admin-idea-criteria ul {
+  display: grid;
+  gap: 5px;
+  margin: 10px 0 0 18px;
+  padding: 0;
+}
+
 .admin-idea-row {
   display: flex;
   align-items: center;
