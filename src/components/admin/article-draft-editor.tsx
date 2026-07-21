@@ -638,34 +638,37 @@ export function ArticleDraftEditor() {
           </div>
         </header>
 
-        <div className="admin-actions">
-          <Link className="button secondary" href="/admin/library">Библиотека статей</Link>
-          <button
+        <div className="admin-actions" aria-label="Article actions">
+          <div className="admin-action-group admin-action-primary">
+            <Link className="button secondary" href="/admin/library">Библиотека статей</Link>
+            <button
             type="button"
             className="button secondary"
             onClick={() => void saveToLibrary()}
-          >
-            <Save size={16} aria-hidden="true" />
-            Save to library
-          </button>
-          <button
+            >
+              <Save size={16} aria-hidden="true" />
+              Save to library
+            </button>
+            <button
             type="button"
             className="button secondary"
             onClick={generateWithGroq}
             disabled={groqBusy}
-          >
-            <Sparkles size={16} aria-hidden="true" />
-            {groqBusy ? "Пишу статью…" : "Написать по заголовку"}
-          </button>
-          <button type="button" className="button primary" onClick={() => void publishDraft()} disabled={publishBusy}>
-            <Upload size={16} aria-hidden="true" />
-            {publishBusy ? "Публикую…" : "Опубликовать в библиотеке"}
-          </button>
-          <button type="button" className="button secondary" onClick={signOut}>
-            <LogOut size={16} aria-hidden="true" />
-            Sign out
-          </button>
-          <button
+            >
+              <Sparkles size={16} aria-hidden="true" />
+              {groqBusy ? "Пишу статью…" : "Написать по заголовку"}
+            </button>
+            <button type="button" className="button primary" onClick={() => void publishDraft()} disabled={publishBusy}>
+              <Upload size={16} aria-hidden="true" />
+              {publishBusy ? "Публикую…" : "Опубликовать в библиотеке"}
+            </button>
+          </div>
+          <div className="admin-action-group admin-action-utility">
+            <button type="button" className="button secondary" onClick={signOut}>
+              <LogOut size={16} aria-hidden="true" />
+              Sign out
+            </button>
+            <button
             type="button"
             className="button secondary"
             onClick={() =>
@@ -675,11 +678,11 @@ export function ArticleDraftEditor() {
                 "text/markdown",
               )
             }
-          >
-            <Download size={16} aria-hidden="true" />
-            Export Markdown
-          </button>
-          <button
+            >
+              <Download size={16} aria-hidden="true" />
+              Export Markdown
+            </button>
+            <button
             type="button"
             className="button secondary"
             onClick={() =>
@@ -689,21 +692,22 @@ export function ArticleDraftEditor() {
                 "application/json",
               )
             }
-          >
-            <FileText size={16} aria-hidden="true" />
-            Export JSON
-          </button>
-          <button
+            >
+              <FileText size={16} aria-hidden="true" />
+              Export JSON
+            </button>
+            <button
             type="button"
             className="button ghost"
             onClick={() => {
               localStorage.removeItem(storageKey);
               setDraft(createDraft("restriction"));
             }}
-          >
-            <Trash2 size={16} aria-hidden="true" />
-            Clear
-          </button>
+            >
+              <Trash2 size={16} aria-hidden="true" />
+              Clear
+            </button>
+          </div>
         </div>
         {groqError ? <p className="admin-form-error">{groqError}</p> : null}
         {operationMessage ? <p className={`admin-operation-notice ${operationTone}`} role="status" aria-live="polite">{operationMessage}</p> : null}
@@ -712,7 +716,14 @@ export function ArticleDraftEditor() {
           Введи заголовок — Groq подготовит русскую статью и варианты EN/UK. Только черновик: не вводи пароли, коды подтверждения или полные документы.
         </p>
 
-        <section className="admin-card admin-ideas">
+        <nav className="admin-workflow-nav" aria-label="Article workflow">
+          <a href="#admin-ideas"><span>01</span> Идея</a>
+          <a href="#admin-preflight"><span>02</span> Проверка</a>
+          <a href="#admin-editor"><span>03</span> Редактор</a>
+          <a href="#admin-preview"><span>04</span> Предпросмотр</a>
+        </nav>
+
+        <section id="admin-ideas" className="admin-card admin-ideas">
           <div className="admin-card-heading">
             <div>
               <p className="eyebrow">Demand backlog</p>
@@ -762,7 +773,7 @@ export function ArticleDraftEditor() {
         </section>
 
         <div className="admin-utility-grid">
-          <section className="admin-card admin-preflight">
+          <section id="admin-preflight" className="admin-card admin-preflight">
             <div className="admin-card-heading">
               <div>
                 <p className="eyebrow">Before review</p>
@@ -789,7 +800,7 @@ export function ArticleDraftEditor() {
             </div>
           </section>
 
-          <section className="admin-card">
+          <section id="admin-library" className="admin-card">
             <div className="admin-card-heading">
               <div>
                 <p className="eyebrow">Workspace</p>
@@ -822,8 +833,17 @@ export function ArticleDraftEditor() {
           </section>
         </div>
 
+        <div className="admin-workspace-heading">
+          <div>
+            <p className="eyebrow">Article workspace</p>
+            <h2>Собери и проверь один гайд</h2>
+          </div>
+          <p className="admin-muted">Слева — поля и редактура. Справа — живой предпросмотр.</p>
+        </div>
+
         <div className="admin-grid">
           <form
+            id="admin-editor"
             className="admin-editor"
             onSubmit={(event) => event.preventDefault()}
           >
@@ -1211,7 +1231,7 @@ export function ArticleDraftEditor() {
             </CollapsibleAdminPanel>
           </form>
 
-          <aside className="admin-preview" aria-label="Draft preview">
+          <aside id="admin-preview" className="admin-preview" aria-label="Draft preview">
             <article>
               <p className="eyebrow">
                 {draft.platform || "Platform"} ·{" "}
