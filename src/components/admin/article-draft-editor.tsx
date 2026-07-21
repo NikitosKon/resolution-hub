@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ChangeEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
 import { Download, FileText, LogOut, Save, Sparkles, Trash2, Upload } from "lucide-react";
 import {
   createDraft,
@@ -81,6 +81,25 @@ function downloadText(filename: string, value: string, type: string) {
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
+}
+
+function CollapsibleAdminPanel({
+  title,
+  children,
+  className = "",
+  defaultOpen = false,
+}: {
+  title: string;
+  children: ReactNode;
+  className?: string;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details className={`admin-collapsible ${className}`.trim()} open={defaultOpen || undefined}>
+      <summary>{title}</summary>
+      {children}
+    </details>
+  );
 }
 
 export function ArticleDraftEditor() {
@@ -744,7 +763,8 @@ export function ArticleDraftEditor() {
             className="admin-editor"
             onSubmit={(event) => event.preventDefault()}
           >
-            <div className="admin-card">
+            <CollapsibleAdminPanel title="Шаблон статьи">
+              <div className="admin-card">
               <h2>Template</h2>
               <div className="template-grid">
                 {(Object.keys(draftTemplates) as DraftTemplateId[]).map(
@@ -764,9 +784,11 @@ export function ArticleDraftEditor() {
                   ),
                 )}
               </div>
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card form-grid">
+            <CollapsibleAdminPanel title="Основные поля">
+              <div className="admin-card form-grid">
               <label className="field">
                 <span>Language</span>
                 <select
@@ -847,9 +869,11 @@ export function ArticleDraftEditor() {
                   }
                 />
               </label>
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card">
+            <CollapsibleAdminPanel title="Языковые версии">
+              <div className="admin-card">
               <h2>Language versions</h2>
               <p className="admin-muted">
                 Keep one article identity while preparing separate RU, EN and UK copy.
@@ -876,9 +900,11 @@ export function ArticleDraftEditor() {
                   </div>
                 ))}
               </div>
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card">
+            <CollapsibleAdminPanel title="Основной текст гайда">
+              <div className="admin-card">
               <h2>Guide body</h2>
               <div className="admin-stack">
                 {draft.sections.map((section, index) => (
@@ -917,9 +943,11 @@ export function ArticleDraftEditor() {
                   </div>
                 ))}
               </div>
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card">
+            <CollapsibleAdminPanel title="Таблицы">
+              <div className="admin-card">
               <div className="admin-card-heading">
                 <div>
                   <h2>Structured tables</h2>
@@ -992,9 +1020,11 @@ export function ArticleDraftEditor() {
                   ))}
                 </div>
               )}
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card">
+            <CollapsibleAdminPanel title="Визуальные блоки">
+              <div className="admin-card">
               <div className="admin-card-heading">
                 <div>
                   <h2>Helpful visual blocks</h2>
@@ -1031,9 +1061,11 @@ export function ArticleDraftEditor() {
                   ))}
                 </div>
               )}
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card form-grid">
+            <CollapsibleAdminPanel title="Предупреждение, источники и CTA">
+              <div className="admin-card form-grid">
               <label className="field full">
                 <span>Warnings</span>
                 <textarea
@@ -1057,9 +1089,11 @@ export function ArticleDraftEditor() {
                   onChange={(event) => setField("cta", event.target.value)}
                 />
               </label>
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
 
-            <div className="admin-card">
+            <CollapsibleAdminPanel title="Частые вопросы">
+              <div className="admin-card">
               <h2>Common questions</h2>
               <div className="admin-stack">
                 {draft.faq.map((item, index) => (
@@ -1098,7 +1132,8 @@ export function ArticleDraftEditor() {
                   </div>
                 ))}
               </div>
-            </div>
+              </div>
+            </CollapsibleAdminPanel>
           </form>
 
           <aside className="admin-preview" aria-label="Draft preview">
