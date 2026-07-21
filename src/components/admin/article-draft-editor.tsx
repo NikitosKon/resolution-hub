@@ -574,6 +574,7 @@ export function ArticleDraftEditor() {
         title: generated.title || current.title,
         summary: generated.summary || current.summary,
         quickAnswer: generated.quickAnswer || current.quickAnswer,
+        cta: generated.cta || current.cta,
         sections: Array.isArray(generated.sections) ? generated.sections : current.sections,
         tables: Array.isArray(generated.tables) && generated.tables.length
           ? generated.tables

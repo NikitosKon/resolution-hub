@@ -13,7 +13,8 @@ test("article draft templates export a structured markdown draft", () => {
 
   const markdown = draftToMarkdown(draft);
 
-  assert.match(markdown, /^# eBay verification documents requested/);
+  assert.match(markdown, /^---\n\nstatus: draft/);
+  assert.match(markdown, /# eBay verification documents requested/);
   assert.match(markdown, /## Quick answer/);
   assert.match(markdown, /## Official sources/);
   assert.match(markdown, /## Telegram CTA/);

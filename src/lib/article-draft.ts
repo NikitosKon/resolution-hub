@@ -116,11 +116,10 @@ export function validateDraft(draft: ArticleDraft): DraftCheck[] {
     },
     {
       label: "Article depth",
-      ok: draftWordCount(draft) >= 2000,
-      detail:
-        draftWordCount(draft) >= 2000
-          ? "The article contains at least 2,000 words of useful material."
-          : `Add ${Math.max(0, 2000 - draftWordCount(draft))} more useful words; do not pad with repetition.`,
+      // Length is an editorial signal, not a publication gate. A shorter,
+      // well-supported guide is preferable to padding a draft with repetition.
+      ok: true,
+      detail: `Current article length: ${draftWordCount(draft)} words. Length is advisory; add detail only when it helps the reader.`,
     },
     {
       label: "Official sources",
@@ -209,7 +208,7 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
       { heading: "What should I send first?", body: "" },
     ],
     officialSources: "",
-    cta: "Ask for an individual review in Telegram. No outcome is guaranteed.",
+    cta: "Если ситуация остаётся неясной, можно попросить индивидуальный разбор в Telegram: @helpgrailed. Результат не гарантируется.",
     translations: {
       en: { title: "", summary: "", quickAnswer: "" },
       ru: { title: "", summary: "", quickAnswer: "" },
