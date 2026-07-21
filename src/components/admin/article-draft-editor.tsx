@@ -118,7 +118,7 @@ export function ArticleDraftEditor() {
           .order("priority", { ascending: true })
           .order("created_at", { ascending: false });
         if (ideaError) throw ideaError;
-        const cloudIdeas = (ideaData ?? []).map((item) => ({
+        const allCloudIdeas = (ideaData ?? []).map((item) => ({
           id: item.id as string,
           title: item.title as string,
           platform: item.platform as string,
@@ -131,7 +131,8 @@ export function ArticleDraftEditor() {
           source: item.source as string,
           sourceCheckedAt: (item.source_checked_at as string) || "",
         }));
-        const existingTitles = new Set(cloudIdeas.map((idea) => idea.title));
+        const cloudIdeas = allCloudIdeas.filter((idea) => idea.status === "new" || idea.status === "planned");
+        const existingTitles = new Set(allCloudIdeas.map((idea) => idea.title));
         const missingIdeas = starterArticleIdeas
           .filter((idea) => !existingTitles.has(idea.title))
           .map((idea, index) => ({ ...idea, id: `seed-${cloudIdeas.length}-${index}`, status: "new" as const }));
@@ -265,7 +266,7 @@ export function ArticleDraftEditor() {
     }
   }
 
-  function applyIdea(idea: ArticleIdea) {
+  async function applyIdea(idea: ArticleIdea) {
     setDraft((current) => ({
       ...current,
       title: idea.title,
@@ -274,8 +275,23 @@ export function ArticleDraftEditor() {
       primaryKeyword: idea.primaryKeyword || idea.title,
       slug: slugify(idea.title),
     }));
-    setIdeas((current) => current.map((item) => item.id === idea.id ? { ...item, status: "planned" } : item));
-    localStorage.setItem(ideasKey, JSON.stringify(ideas.map((item) => item.id === idea.id ? { ...item, status: "planned" } : item)));
+    const remainingIdeas = ideas.filter((item) => item.id !== idea.id);
+    setIdeas(remainingIdeas);
+    localStorage.setItem(ideasKey, JSON.stringify(remainingIdeas));
+    try {
+      const supabase = createSupabaseBrowserClient();
+      const { data: userData } = await supabase.auth.getUser();
+      if (userData.user) {
+        const { error } = await supabase
+          .from("article_ideas")
+          .update({ status: "used", updated_at: new Date().toISOString() })
+          .eq("owner_id", userData.user.id)
+          .eq("title", idea.title);
+        if (error) throw error;
+      }
+    } catch {
+      setIdeasError("Идея убрана из списка локально, но статус в Cloud library не обновился.");
+    }
     setStatus("draft");
   }
 
@@ -552,7 +568,7 @@ export function ArticleDraftEditor() {
                     <small>{idea.platform || "Без платформы"} · {idea.locale.toUpperCase()} · {idea.priority} · {idea.status}</small>
                     {idea.demandEvidence ? <small>{idea.demandEvidence}</small> : null}
                   </div>
-                  <button type="button" className="button ghost" onClick={() => applyIdea(idea)}>В черновик</button>
+                  <button type="button" className="button ghost" onClick={() => void applyIdea(idea)}>В черновик</button>
                 </div>
               ))}
             </div>
