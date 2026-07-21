@@ -537,10 +537,9 @@ export function ArticleDraftEditor() {
       setPublishMessage("");
       return;
     }
-    if (status !== "approved" || !reviewReady) {
-      const reviewMessage = status !== "approved"
-        ? "Перед публикацией переведи статус в Approved после ручной проверки."
-        : "Подтверди проверку каждого утверждения, источников и итогового текста.";
+    const statusAllowsPublish = status === "approved" || status === "published";
+    if (!statusAllowsPublish && !reviewReady) {
+      const reviewMessage = "Отметь все три подтверждения ручной проверки. После этого статус автоматически станет Approved.";
       setGroqError(reviewMessage);
       setOperationTone("error");
       setOperationMessage(reviewMessage);
@@ -551,6 +550,9 @@ export function ArticleDraftEditor() {
     setPublishMessage("Публикую статью…");
     setOperationTone("info");
     setOperationMessage("Проверяю обязательные поля и сохраняю статью в Cloud library…");
+    // The three confirmations are the human approval action. Keep the
+    // explicit status selector for editing, but do not make the user repeat
+    // the same approval in a second control.
     setStatus("published");
     const savedToCloud = await saveToLibrary("published");
     const resultMessage = savedToCloud ? "Статья опубликована в Cloud library. Публичный URL уже доступен после обновления страницы." : "Черновик сохранён локально. Cloud library недоступна, поэтому публичная публикация не выполнена.";
