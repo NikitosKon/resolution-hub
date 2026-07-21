@@ -1603,6 +1603,11 @@ h3 {
   margin: 0;
 }
 
+.admin-form-success {
+  color: var(--accent-strong);
+  margin: 0;
+}
+
 .admin-header {
   display: flex;
   align-items: end;

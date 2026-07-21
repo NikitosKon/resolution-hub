@@ -79,6 +79,8 @@ export function ArticleDraftEditor() {
   const [status, setStatus] = useState<ArticleStatus>("draft");
   const [groqBusy, setGroqBusy] = useState(false);
   const [groqError, setGroqError] = useState("");
+  const [publishBusy, setPublishBusy] = useState(false);
+  const [publishMessage, setPublishMessage] = useState("");
   const [ideas, setIdeas] = useState<ArticleIdea[]>([]);
   const [ideasError, setIdeasError] = useState("");
   const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
@@ -332,7 +334,7 @@ export function ArticleDraftEditor() {
     try {
       const supabase = createSupabaseBrowserClient();
       const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
+      if (!userData.user) return false;
       const { error } = await supabase.from("article_drafts").upsert(
         {
           owner_id: userData.user.id,
@@ -347,8 +349,10 @@ export function ArticleDraftEditor() {
       );
       if (error) throw error;
       setCloudReady(true);
+      return true;
     } catch {
       // LocalStorage remains a safe offline fallback.
+      return false;
     }
   }
 
@@ -357,11 +361,16 @@ export function ArticleDraftEditor() {
     const missing = checks.filter((check) => !check.ok).map((check) => check.label);
     if (!draft.title.trim() || !draft.slug.trim() || !draft.officialSources.trim()) {
       setGroqError(`Перед публикацией заполни: ${[...missing, !draft.officialSources.trim() ? "Official sources" : ""].filter(Boolean).join(", ")}.`);
+      setPublishMessage("");
       return;
     }
     setGroqError("");
+    setPublishBusy(true);
+    setPublishMessage("Публикую статью…");
     setStatus("published");
-    await saveToLibrary("published");
+    const savedToCloud = await saveToLibrary("published");
+    setPublishMessage(savedToCloud ? "Статья опубликована в Cloud library. Публичный URL уже доступен после обновления страницы." : "Черновик сохранён локально. Cloud library недоступна, поэтому публичная публикация не выполнена.");
+    setPublishBusy(false);
   }
 
   async function removeSavedDraft(id: string) {
@@ -481,9 +490,9 @@ export function ArticleDraftEditor() {
             <Sparkles size={16} aria-hidden="true" />
             {groqBusy ? "Пишу статью…" : "Написать по заголовку"}
           </button>
-          <button type="button" className="button primary" onClick={publishDraft}>
+          <button type="button" className="button primary" onClick={() => void publishDraft()} disabled={publishBusy}>
             <Upload size={16} aria-hidden="true" />
-            Опубликовать в библиотеке
+            {publishBusy ? "Публикую…" : "Опубликовать в библиотеке"}
           </button>
           <button type="button" className="button secondary" onClick={signOut}>
             <LogOut size={16} aria-hidden="true" />
@@ -530,6 +539,7 @@ export function ArticleDraftEditor() {
           </button>
         </div>
         {groqError ? <p className="admin-form-error">{groqError}</p> : null}
+        {publishMessage ? <p className="admin-form-success">{publishMessage}</p> : null}
         <p className="admin-muted">
           Введи заголовок — Groq подготовит русскую статью и варианты EN/UK. Только черновик: не вводи пароли, коды подтверждения или полные документы.
         </p>
