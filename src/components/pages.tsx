@@ -351,12 +351,12 @@ export async function PlatformPage({
             empty={d.category.empty}
           />
           {publishedDrafts.length ? (
-            <div className="latest-list" aria-label="Published draft guides">
+            <div className="grid issue-grid" aria-label="Published draft guides">
               {publishedDrafts.map((item) => (
-                <Link key={item.slug} href={`/${locale}/${platform.slug}/${item.slug}/`}>
-                  <span>{platform.name}</span>
+                <Link className="card issue-card" key={item.slug} href={`/${locale}/${platform.slug}/${item.slug}/`}>
+                  <span className="meta">{platform.name}</span>
                   <h3>{item.draft.translations?.[locale]?.title || item.draft.title}</h3>
-                  <ArrowRight size={18} />
+                  <span className="link-label">{locale === "en" ? "Read guide" : locale === "ru" ? "Читать" : "Читати"} →</span>
                 </Link>
               ))}
             </div>
