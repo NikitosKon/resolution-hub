@@ -1776,6 +1776,24 @@ h3 {
   gap: 12px;
   padding: 12px 0 8px;
   color: var(--accent-strong);
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-idea-platform-heading::-webkit-details-marker {
+  display: none;
+}
+
+.admin-idea-platform-heading::before {
+  content: "+";
+  margin-right: 8px;
+  color: var(--muted);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.admin-idea-platform[open] .admin-idea-platform-heading::before {
+  content: "−";
 }
 
 .admin-idea-platform-heading span {

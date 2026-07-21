@@ -698,11 +698,11 @@ export function ArticleDraftEditor() {
           ) : (
             <div className="admin-ideas-list">
               {ideasByPlatform.map(([platform, platformIdeas]) => (
-                <section className="admin-idea-platform" key={platform}>
-                  <div className="admin-idea-platform-heading">
+                <details className="admin-idea-platform" key={platform}>
+                  <summary className="admin-idea-platform-heading">
                     <strong>{platform}</strong>
                     <span>{platformIdeas.length}</span>
-                  </div>
+                  </summary>
                   {platformIdeas.map((idea) => (
                     <div className="admin-idea-row" key={idea.id}>
                       <div>
@@ -713,7 +713,7 @@ export function ArticleDraftEditor() {
                       <button type="button" className="button ghost" onClick={() => void applyIdea(idea)}>В черновик</button>
                     </div>
                   ))}
-                </section>
+                </details>
               ))}
             </div>
           )}
