@@ -102,7 +102,7 @@ async function runQualityPass(apiKey: string, parsed: Record<string, unknown>) {
       response_format: { type: "json_object" },
       messages: [
         { role: "system", content: "You are the final senior editor for Resolution Hub. Never invent facts or sources." },
-        { role: "user", content: `Review this draft against a practical 10-point editorial rubric: factual caution (2), usefulness and completeness (2), clear single intent (1), natural Russian (1), non-repetitive structure (1), safe next steps (1), source boundaries (1), honest Telegram CTA (1). Target 8–10/10. Rewrite only where needed to reach that standard. Remove unsupported certainty, mixed-language fragments, repeated claims and generic filler. Keep the same JSON article shape, exactly one table, at least two visual blocks and 8–10 purposeful sections. Return JSON only: {"score":8,"improvements":["..."],"draft":{...}}. The score must reflect the revised draft, not optimism.\n\n${JSON.stringify(parsed)}` },
+        { role: "user", content: `Review this draft against a practical 10-point editorial rubric: factual caution (2), usefulness and completeness (2), clear single intent (1), natural Russian (1), non-repetitive structure (1), safe next steps (1), source boundaries (1), honest Telegram CTA (1). Target 8–10/10. Rewrite only where needed to reach that standard. Remove unsupported certainty, mixed-language fragments, repeated claims and generic filler. The revised draft must not be shorter than the input; preserve all useful detail and expand thin sections instead. If it is below 2,000 words, add genuinely useful, source-conscious detail rather than declaring it finished. Keep the same JSON article shape, exactly one table, at least two visual blocks and 8–10 purposeful sections. Return JSON only: {"score":8,"improvements":["..."],"draft":{...}}. The score must reflect the revised draft, not optimism.\n\n${JSON.stringify(parsed)}` },
       ],
     }),
   });
@@ -229,7 +229,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
     }
     ensureEditorialBlocks(parsed);
     let expansionAttempt = 0;
-    while (draftWordCount(parsed) < 2000 && expansionAttempt < 3) {
+    while (draftWordCount(parsed) < 2000 && expansionAttempt < 5) {
       expansionAttempt += 1;
       const currentWordCount = draftWordCount(parsed);
       const missingWords = 2000 - currentWordCount;
@@ -255,7 +255,9 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
         const expandedContent = expansionResult.choices?.[0]?.message?.content;
         if (expandedContent) {
           const expanded = parseJson(expandedContent) as Record<string, unknown>;
-          parsed = { ...parsed, ...expanded };
+          const expandedCandidate = { ...parsed, ...expanded };
+          // Never let a truncated Groq response replace a longer draft.
+          if (draftWordCount(expandedCandidate) > currentWordCount) parsed = expandedCandidate;
           if (officialSourceCandidates.length) parsed.officialSources = officialSourceCandidates.join("\n");
           ensureEditorialBlocks(parsed);
         }
@@ -266,7 +268,11 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
     for (let pass = 0; pass < 2; pass += 1) {
       const quality = await runQualityPass(apiKey, parsed);
       if (!quality) break;
-      parsed = { ...parsed, ...quality.draft };
+      const currentWordCount = draftWordCount(parsed);
+      const qualityCandidate = { ...parsed, ...quality.draft };
+      // Quality editing may refine wording, but it must not silently shorten
+      // the article back to a tiny 300–500 word response.
+      if (draftWordCount(qualityCandidate) >= currentWordCount) parsed = qualityCandidate;
       if (officialSourceCandidates.length) parsed.officialSources = officialSourceCandidates.join("\n");
       ensureEditorialBlocks(parsed);
       qualityScore = quality.score;
