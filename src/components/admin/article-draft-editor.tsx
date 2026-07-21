@@ -102,6 +102,14 @@ export function ArticleDraftEditor() {
     () => markdown.split(/\s+/).filter(Boolean).length,
     [markdown],
   );
+  const ideasByPlatform = useMemo(() => {
+    const groups = new Map<string, ArticleIdea[]>();
+    for (const idea of ideas) {
+      const platform = idea.platform.trim() || "Без платформы";
+      groups.set(platform, [...(groups.get(platform) ?? []), idea]);
+    }
+    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ru"));
+  }, [ideas]);
 
   useEffect(() => {
     let cancelled = false;
@@ -655,15 +663,23 @@ export function ArticleDraftEditor() {
             <p className="admin-muted">Пока нет идей. CSV должен начинаться с `title`; также можно указать platform, language, keyword, intent, priority, demand, source.</p>
           ) : (
             <div className="admin-ideas-list">
-              {ideas.map((idea) => (
-                <div className="admin-idea-row" key={idea.id}>
-                  <div>
-                    <strong>{idea.title}</strong>
-                    <small>{idea.platform || "Без платформы"} · {idea.locale.toUpperCase()} · {idea.priority} · {idea.status}</small>
-                    {idea.demandEvidence ? <small>{idea.demandEvidence}</small> : null}
+              {ideasByPlatform.map(([platform, platformIdeas]) => (
+                <section className="admin-idea-platform" key={platform}>
+                  <div className="admin-idea-platform-heading">
+                    <strong>{platform}</strong>
+                    <span>{platformIdeas.length}</span>
                   </div>
-                  <button type="button" className="button ghost" onClick={() => void applyIdea(idea)}>В черновик</button>
-                </div>
+                  {platformIdeas.map((idea) => (
+                    <div className="admin-idea-row" key={idea.id}>
+                      <div>
+                        <strong>{idea.title}</strong>
+                        <small>{idea.locale.toUpperCase()} · {idea.priority} · {idea.status}</small>
+                        {idea.demandEvidence ? <small>{idea.demandEvidence}</small> : null}
+                      </div>
+                      <button type="button" className="button ghost" onClick={() => void applyIdea(idea)}>В черновик</button>
+                    </div>
+                  ))}
+                </section>
               ))}
             </div>
           )}

@@ -1762,6 +1762,32 @@ h3 {
   padding-right: 8px;
 }
 
+.admin-idea-platform {
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg);
+}
+
+.admin-idea-platform-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0 8px;
+  color: var(--accent-strong);
+}
+
+.admin-idea-platform-heading span {
+  min-width: 24px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 .admin-idea-criteria {
   margin-top: 12px;
   color: var(--muted);
