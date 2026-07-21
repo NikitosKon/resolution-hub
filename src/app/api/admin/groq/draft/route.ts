@@ -198,7 +198,11 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
       parsed.officialSources = officialSourceCandidates.join("\n");
     }
     ensureEditorialBlocks(parsed);
-    if (draftWordCount(parsed) < 2000) {
+    let expansionAttempt = 0;
+    while (draftWordCount(parsed) < 2000 && expansionAttempt < 3) {
+      expansionAttempt += 1;
+      const currentWordCount = draftWordCount(parsed);
+      const missingWords = 2000 - currentWordCount;
       const expansionResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -212,7 +216,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
           response_format: { type: "json_object" },
           messages: [
             { role: "system", content: "You are a careful Resolution Hub senior editor. Expand only with useful, source-conscious detail. Never invent facts." },
-            { role: "user", content: `Expand this Russian draft to at least 2,000 useful words. Preserve all existing facts, uncertainty, sources, warnings and intent. Add relevant explanations, distinctions, safe preparation steps, mistake prevention and genuinely useful FAQ answers. Do not repeat paragraphs, add statistics, invent platform rules, create cases or promise outcomes. Keep exactly one table and at least two visual blocks. Return the same JSON shape only.\n\n${JSON.stringify(parsed)}` },
+            { role: "user", content: `This draft currently contains ${currentWordCount} words. Expand it by at least ${missingWords + 150} useful words and reach at least 2,000 words total. Preserve all existing facts, uncertainty, sources, warnings and intent. Add relevant explanations, distinctions, safe preparation steps, mistake prevention and genuinely useful FAQ answers. Do not repeat paragraphs, add statistics, invent platform rules, create cases or promise outcomes. Keep exactly one table and at least two visual blocks. Return the same JSON shape only.\n\n${JSON.stringify(parsed)}` },
           ],
         }),
       });
@@ -227,7 +231,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
         }
       }
     }
-    return NextResponse.json({ draft: parsed, status: "draft" });
+    return NextResponse.json({ draft: parsed, status: "draft", wordCount: draftWordCount(parsed) });
   } catch {
     return NextResponse.json({ error: "Groq returned invalid JSON" }, { status: 502 });
   }

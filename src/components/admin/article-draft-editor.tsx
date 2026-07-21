@@ -566,7 +566,7 @@ export function ArticleDraftEditor() {
           sectionHeadings: draft.sections.map((section) => section.heading),
         }),
       });
-      const result = (await response.json()) as { draft?: Partial<ArticleDraft>; error?: string };
+      const result = (await response.json()) as { draft?: Partial<ArticleDraft>; error?: string; wordCount?: number };
       if (!response.ok || !result.draft) throw new Error(result.error || "Groq request failed");
       const generated = result.draft;
       setDraft((current) => ({
@@ -589,7 +589,7 @@ export function ArticleDraftEditor() {
       setStatus("draft");
       setReviewConfirmed({ claims: false, sources: false, read: false });
       setOperationTone("success");
-      setOperationMessage("Черновик готов. Проверь факты, официальные источники и язык перед публикацией.");
+      setOperationMessage(`Черновик готов${typeof result.wordCount === "number" ? `: ${result.wordCount} слов` : ""}. Проверь факты, официальные источники и язык перед публикацией.`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Groq request failed";
       setGroqError(message);
