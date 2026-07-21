@@ -93,6 +93,14 @@ export function validateDraft(draft: ArticleDraft): DraftCheck[] {
           : "Check every section against an official source before approval.",
     },
     {
+      label: "Visual structure",
+      ok: (draft.tables ?? []).length === 1 && (draft.visualBlocks ?? []).length >= 2,
+      detail:
+        (draft.tables ?? []).length === 1 && (draft.visualBlocks ?? []).length >= 2
+          ? "One table and at least two visual blocks are present."
+          : "Add one table and at least two useful visual blocks before approval.",
+    },
+    {
       label: "Official sources",
       ok: Boolean(draft.officialSources.trim()),
       detail: draft.officialSources.trim()

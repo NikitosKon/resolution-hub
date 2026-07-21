@@ -2271,19 +2271,38 @@ h3 {
 
 .admin-preview article {
   max-width: 760px;
+  min-width: 0;
   margin-inline: auto;
+  overflow-wrap: anywhere;
 }
 
 .admin-preview h1 {
   font-size: clamp(2.2rem, 4vw, 3.4rem);
+  margin-bottom: 20px;
+  overflow-wrap: anywhere;
 }
 
 .admin-preview section {
-  margin-top: 34px;
+  min-width: 0;
+  margin-top: 30px;
 }
 
 .admin-preview p {
+  margin: 0 0 16px;
   color: #c0c6ce;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.admin-preview h2,
+.admin-preview h3,
+.admin-preview li {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.admin-preview h2 {
+  margin-bottom: 12px;
 }
 
 .trust-panel {

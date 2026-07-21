@@ -38,6 +38,12 @@ const articleStatuses: Array<{ value: ArticleStatus; label: string }> = [
   { value: "published", label: "Published" },
 ];
 
+const previewLabels: Record<Locale, { before: string; questions: string }> = {
+  en: { before: "Before you continue", questions: "Common questions" },
+  ru: { before: "Перед тем как продолжить", questions: "Частые вопросы" },
+  uk: { before: "Перед тим як продовжити", questions: "Поширені запитання" },
+};
+
 function slugify(value: string) {
   return value
     .toLocaleLowerCase("en")
@@ -1244,14 +1250,14 @@ export function ArticleDraftEditor() {
                 </section>
               ))}
               <section>
-                <h2>Before you continue</h2>
+                <h2>{previewLabels[draft.locale].before}</h2>
                 <p>
                   {draft.warnings ||
                     "Add limitations, risks and no-guarantee wording."}
                 </p>
               </section>
               <section>
-                <h2>Common questions</h2>
+                <h2>{previewLabels[draft.locale].questions}</h2>
                 {draft.faq.map((item, index) => (
                   <div key={`${item.heading}-${index}`}>
                     <h3>{item.heading}</h3>

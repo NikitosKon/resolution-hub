@@ -33,6 +33,37 @@ function parseJson(text: string) {
   return JSON.parse(cleaned);
 }
 
+function ensureEditorialBlocks(parsed: Record<string, unknown>) {
+  const sections = Array.isArray(parsed.sections) ? parsed.sections as Array<{ heading?: string }> : [];
+  const tables = Array.isArray(parsed.tables) ? parsed.tables : [];
+  parsed.tables = tables.length ? tables.slice(0, 1) : [{
+    heading: "Что проверить перед обращением",
+    columns: ["Проверка", "Что подтвердить"],
+    rows: sections.slice(0, 4).map((section) => [
+      section.heading || "Раздел статьи",
+      "Сверьте с уведомлением аккаунта и официальным источником",
+    ]),
+  }];
+  const blocks = Array.isArray(parsed.visualBlocks) ? parsed.visualBlocks as Array<Record<string, unknown>> : [];
+  const fallback = [
+    {
+      type: "checklist",
+      heading: "Перед отправкой",
+      body: "Соберите только сведения, которые относятся к вашей ситуации, и проверьте их по уведомлению платформы.",
+      items: sections.slice(0, 4).map((section) => `Проверьте раздел «${section.heading || "требование платформы"}»`),
+      source: "",
+    },
+    {
+      type: "callout",
+      heading: "Перед тем как продолжить",
+      body: typeof parsed.warnings === "string" && parsed.warnings.trim() ? parsed.warnings : "Не отправляйте неподтверждённые сведения и не рассчитывайте на заранее гарантированный результат.",
+      items: [],
+      source: "",
+    },
+  ];
+  parsed.visualBlocks = [...blocks, ...fallback].slice(0, 2);
+}
+
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -89,13 +120,13 @@ Editorial requirements:
 - Explain what the reader should not assume, what evidence is useful, and when they must use the platform's own support or official help.
 - Keep paragraphs short (2–4 sentences), remove filler, repeated conclusions and generic introductions.
 - Include 7–10 distinct sections when the topic warrants that depth, one practical warning, and 3–5 genuinely useful common questions. Do not create a FAQ just to repeat the article.
-- Add at most two tables only when they clarify a comparison, a checklist or requested evidence. Keep cells short; return an empty array when a table would add no value.
-- Choose zero or one visual block from these types when it improves understanding: checklist, timeline, decision-tree, callout, source-card. Never add a block only to make the page look fuller. A timeline requires confirmed dates or stages; a source-card requires a real official URL; a decision-tree must use only facts already supported in the draft.
+- Return exactly one useful table with short cells. Use it for checks, evidence or a comparison; never invent statistics or platform rules.
+- Return at least two visual blocks from these types: checklist, timeline, decision-tree, callout, source-card. A timeline requires confirmed dates or stages; a source-card requires a real official URL; a decision-tree must use only facts already supported in the draft. A checklist and a caution callout are safe defaults when no other block is justified.
 - Make the guide complete enough to solve the reader's immediate question. Add context, account-specific limits, safe next steps and what not to assume. Aim for substantial depth when evidence supports it, but never repeat the same point or pad the article.
 - The result should read like an edited Resolution Hub guide, not like a marketing post, chatbot answer or legal opinion.
 
 Write the main article in Russian using natural Cyrillic Russian only. Do not insert Chinese, Japanese, Korean or unexplained English fragments into the Russian title, summary, sections, warnings or FAQ. Also prepare concise, natural EN and UK versions of the title, summary and quick answer. Return JSON only with this shape:
-{"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]]}],"visualBlocks":[{"type":"checklist","heading":"","body":"","items":[""],"source":""}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
+{"title":"","summary":"","quickAnswer":"","sections":[{"heading":"","body":""}],"tables":[{"heading":"","columns":["",""],"rows":[["",""]]}],"visualBlocks":[{"type":"checklist","heading":"","body":"","items":[""],"source":""},{"type":"callout","heading":"","body":"","items":[],"source":""}],"warnings":"","officialSources":"","faq":[{"heading":"","body":""}],"translations":{"en":{"title":"","summary":"","quickAnswer":""},"ru":{"title":"","summary":"","quickAnswer":""},"uk":{"title":"","summary":"","quickAnswer":""}}}
 
 Do not invent platform rules, timelines, outcomes, owner experience or official procedures. Use cautious wording and mark uncertain details as requiring official verification. Do not suggest bypassing restrictions, forged documents or guaranteed recovery.`;
 
@@ -136,6 +167,7 @@ Do not invent platform rules, timelines, outcomes, owner experience or official 
     if (officialSourceCandidates.length) {
       parsed.officialSources = officialSourceCandidates.join("\n");
     }
+    ensureEditorialBlocks(parsed);
     return NextResponse.json({ draft: parsed, status: "draft" });
   } catch {
     return NextResponse.json({ error: "Groq returned invalid JSON" }, { status: 502 });
