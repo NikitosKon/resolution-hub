@@ -6,12 +6,22 @@ import {
   createDraft,
   draftTemplates,
   draftToMarkdown,
+  validateDraft,
   type ArticleDraft,
   type DraftTemplateId,
 } from "@/lib/article-draft";
 import { locales, type Locale } from "@/lib/locales";
 
 const storageKey = "resolution-hub.article-draft";
+const libraryKey = "resolution-hub.article-drafts";
+
+type SavedDraft = {
+  id: string;
+  title: string;
+  slug: string;
+  updatedAt: string;
+  draft: ArticleDraft;
+};
 
 function slugify(value: string) {
   return value
@@ -50,6 +60,7 @@ export function ArticleDraftEditor() {
   const [draft, setDraft] = useState<ArticleDraft>(() =>
     createDraft("restriction"),
   );
+  const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
   const markdown = useMemo(() => draftToMarkdown(draft), [draft]);
   const wordCount = useMemo(
     () => markdown.split(/\s+/).filter(Boolean).length,
@@ -58,6 +69,16 @@ export function ArticleDraftEditor() {
 
   useEffect(() => {
     const saved = localStorage.getItem(storageKey);
+    const library = localStorage.getItem(libraryKey);
+    let libraryFrame = 0;
+    if (library) {
+      try {
+        const parsedLibrary = JSON.parse(library) as SavedDraft[];
+        libraryFrame = requestAnimationFrame(() => setSavedDrafts(parsedLibrary));
+      } catch {
+        localStorage.removeItem(libraryKey);
+      }
+    }
     if (!saved) return;
     let frame = 0;
     try {
@@ -66,7 +87,10 @@ export function ArticleDraftEditor() {
     } catch {
       localStorage.removeItem(storageKey);
     }
-    return () => cancelAnimationFrame(frame);
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(libraryFrame);
+    };
   }, []);
 
   function setField<Key extends keyof ArticleDraft>(
@@ -74,6 +98,26 @@ export function ArticleDraftEditor() {
     value: ArticleDraft[Key],
   ) {
     setDraft((current) => ({ ...current, [key]: value }));
+  }
+
+  function saveToLibrary() {
+    const record: SavedDraft = {
+      id: `${Date.now()}`,
+      title: draft.title || "Untitled guide",
+      slug: draft.slug || "no-slug",
+      updatedAt: new Date().toISOString(),
+      draft,
+    };
+    const next = [record, ...savedDrafts.filter((item) => item.slug !== draft.slug)];
+    setSavedDrafts(next);
+    localStorage.setItem(libraryKey, JSON.stringify(next));
+    localStorage.setItem(storageKey, JSON.stringify(draft));
+  }
+
+  function removeSavedDraft(id: string) {
+    const next = savedDrafts.filter((item) => item.id !== id);
+    setSavedDrafts(next);
+    localStorage.setItem(libraryKey, JSON.stringify(next));
   }
 
   function selectTemplate(templateId: DraftTemplateId) {
@@ -88,6 +132,9 @@ export function ArticleDraftEditor() {
     }));
   }
 
+  const checks = validateDraft(draft);
+  const passedChecks = checks.filter((check) => check.ok).length;
+
   return (
     <main id="main" className="admin-page">
       <section className="admin-shell">
@@ -101,7 +148,7 @@ export function ArticleDraftEditor() {
             </p>
           </div>
           <div className="admin-status">
-            <span>Draft</span>
+            <span>Local draft</span>
             <strong>{wordCount} words</strong>
           </div>
         </header>
@@ -110,12 +157,10 @@ export function ArticleDraftEditor() {
           <button
             type="button"
             className="button secondary"
-            onClick={() => {
-              localStorage.setItem(storageKey, JSON.stringify(draft));
-            }}
+            onClick={saveToLibrary}
           >
             <Save size={16} aria-hidden="true" />
-            Save draft
+            Save to library
           </button>
           <button
             type="button"
@@ -156,6 +201,53 @@ export function ArticleDraftEditor() {
             <Trash2 size={16} aria-hidden="true" />
             Clear
           </button>
+        </div>
+
+        <div className="admin-utility-grid">
+          <section className="admin-card admin-preflight">
+            <div className="admin-card-heading">
+              <div>
+                <p className="eyebrow">Before review</p>
+                <h2>Local preflight</h2>
+              </div>
+              <strong>{passedChecks}/{checks.length}</strong>
+            </div>
+            <p className="admin-muted">
+              A quick local check. It does not replace research, fact-checking or Final QA.
+            </p>
+            <ul className="admin-check-list">
+              {checks.map((check) => (
+                <li key={check.label} className={check.ok ? "ok" : "needs-review"}>
+                  <span aria-hidden="true">{check.ok ? "✓" : "!"}</span>
+                  <div><strong>{check.label}</strong><small>{check.detail}</small></div>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="admin-card">
+            <div className="admin-card-heading">
+              <div>
+                <p className="eyebrow">Local only</p>
+                <h2>Draft library</h2>
+              </div>
+              <strong>{savedDrafts.length}</strong>
+            </div>
+            {savedDrafts.length === 0 ? (
+              <p className="admin-muted">Saved drafts will appear here.</p>
+            ) : (
+              <div className="admin-library-list">
+                {savedDrafts.slice(0, 6).map((item) => (
+                  <div className="admin-library-item" key={item.id}>
+                    <button type="button" onClick={() => setDraft(item.draft)}>
+                      <strong>{item.title}</strong><small>{item.slug}</small>
+                    </button>
+                    <button type="button" className="admin-remove" onClick={() => removeSavedDraft(item.id)} aria-label={`Delete ${item.title}`}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </div>
 
         <div className="admin-grid">

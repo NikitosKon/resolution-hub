@@ -24,6 +24,59 @@ export type ArticleDraft = {
   cta: string;
 };
 
+export type DraftCheck = {
+  label: string;
+  ok: boolean;
+  detail: string;
+};
+
+/** Local preflight only. It never replaces V4 research or Final QA. */
+export function validateDraft(draft: ArticleDraft): DraftCheck[] {
+  const checks: DraftCheck[] = [
+    {
+      label: "Title",
+      ok: Boolean(draft.title.trim()),
+      detail: draft.title.trim() ? "Title is present." : "Add an H1 title.",
+    },
+    {
+      label: "Slug",
+      ok: Boolean(draft.slug.trim()),
+      detail: draft.slug.trim() ? "Slug is present." : "Add a stable slug.",
+    },
+    {
+      label: "Quick answer",
+      ok: Boolean(draft.quickAnswer.trim()),
+      detail: draft.quickAnswer.trim()
+        ? "Short answer is present."
+        : "Add the answer before the long sections.",
+    },
+    {
+      label: "Sections",
+      ok: draft.sections.every((section) => section.body.trim()),
+      detail: draft.sections.every((section) => section.body.trim())
+        ? "Every section has text."
+        : "Fill every section or remove it from the template.",
+    },
+    {
+      label: "Official sources",
+      ok: Boolean(draft.officialSources.trim()),
+      detail: draft.officialSources.trim()
+        ? "Source field is present."
+        : "Add official source URLs before review.",
+    },
+    {
+      label: "Safety wording",
+      ok: Boolean(draft.warnings.trim()) && Boolean(draft.cta.trim()),
+      detail:
+        draft.warnings.trim() && draft.cta.trim()
+          ? "Warnings and CTA are present."
+          : "Add a warning and a calm, non-guaranteed CTA.",
+    },
+  ];
+
+  return checks;
+}
+
 export const draftTemplates: Record<
   DraftTemplateId,
   { label: string; sections: string[] }
