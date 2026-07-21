@@ -21,8 +21,18 @@ type SavedDraft = {
   title: string;
   slug: string;
   updatedAt: string;
+  status: ArticleStatus;
   draft: ArticleDraft;
 };
+
+type ArticleStatus = "draft" | "review" | "approved" | "published";
+
+const articleStatuses: Array<{ value: ArticleStatus; label: string }> = [
+  { value: "draft", label: "Draft" },
+  { value: "review", label: "Review" },
+  { value: "approved", label: "Approved" },
+  { value: "published", label: "Published" },
+];
 
 function slugify(value: string) {
   return value
@@ -64,7 +74,8 @@ export function ArticleDraftEditor() {
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[]>([]);
   const [accountEmail, setAccountEmail] = useState("");
   const [cloudReady, setCloudReady] = useState(false);
-  const markdown = useMemo(() => draftToMarkdown(draft), [draft]);
+  const [status, setStatus] = useState<ArticleStatus>("draft");
+  const markdown = useMemo(() => draftToMarkdown(draft, status), [draft, status]);
   const wordCount = useMemo(
     () => markdown.split(/\s+/).filter(Boolean).length,
     [markdown],
@@ -75,23 +86,23 @@ export function ArticleDraftEditor() {
     async function loadCloudDrafts() {
       try {
         const supabase = createSupabaseBrowserClient();
-        const [{ data: userData }, { data, error }] = await Promise.all([
-          supabase.auth.getUser(),
-          supabase
-            .from("article_drafts")
-            .select("id, slug, title, draft, updated_at")
-            .order("updated_at", { ascending: false }),
-        ]);
-        if (error) throw error;
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        if (userError || !userData.user) throw userError ?? new Error("No session");
         if (cancelled) return;
-        setAccountEmail(userData.user?.email ?? "");
+        setAccountEmail(userData.user.email ?? "");
         setCloudReady(true);
+        const { data, error } = await supabase
+          .from("article_drafts")
+          .select("id, slug, title, draft, status, updated_at")
+          .order("updated_at", { ascending: false });
+        if (error) throw error;
         setSavedDrafts(
           (data ?? []).map((item) => ({
             id: item.id as string,
             title: item.title as string,
             slug: item.slug as string,
             updatedAt: item.updated_at as string,
+            status: (item.status as ArticleStatus) || "draft",
             draft: item.draft as ArticleDraft,
           })),
         );
@@ -107,7 +118,11 @@ export function ArticleDraftEditor() {
     if (library) {
       try {
         const parsedLibrary = JSON.parse(library) as SavedDraft[];
-        libraryFrame = requestAnimationFrame(() => setSavedDrafts(parsedLibrary));
+        libraryFrame = requestAnimationFrame(() =>
+          setSavedDrafts(
+            parsedLibrary.map((item) => ({ ...item, status: item.status || "draft" })),
+          ),
+        );
       } catch {
         localStorage.removeItem(libraryKey);
       }
@@ -134,12 +149,27 @@ export function ArticleDraftEditor() {
     setDraft((current) => ({ ...current, [key]: value }));
   }
 
+  function setTranslation(
+    locale: Locale,
+    field: "title" | "summary" | "quickAnswer",
+    value: string,
+  ) {
+    setDraft((current) => ({
+      ...current,
+      translations: {
+        ...current.translations,
+        [locale]: { ...current.translations[locale], [field]: value },
+      },
+    }));
+  }
+
   async function saveToLibrary() {
     const record: SavedDraft = {
       id: `${Date.now()}`,
       title: draft.title || "Untitled guide",
       slug: draft.slug || "no-slug",
       updatedAt: new Date().toISOString(),
+      status,
       draft,
     };
     const next = [record, ...savedDrafts.filter((item) => item.slug !== draft.slug)];
@@ -156,6 +186,8 @@ export function ArticleDraftEditor() {
           slug: record.slug,
           title: record.title,
           draft: record.draft,
+          status: record.status,
+          translations: record.draft.translations,
           updated_at: record.updatedAt,
         },
         { onConflict: "owner_id,slug" },
@@ -202,6 +234,7 @@ export function ArticleDraftEditor() {
       title: current.title,
       summary: current.summary,
     }));
+    setStatus("draft");
   }
 
   const checks = validateDraft(draft);
@@ -316,8 +349,15 @@ export function ArticleDraftEditor() {
               <div className="admin-library-list">
                 {savedDrafts.slice(0, 6).map((item) => (
                   <div className="admin-library-item" key={item.id}>
-                    <button type="button" onClick={() => setDraft(item.draft)}>
-                      <strong>{item.title}</strong><small>{item.slug}</small>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDraft(item.draft);
+                        setStatus(item.status || "draft");
+                      }}
+                    >
+                      <strong>{item.title}</strong>
+                      <small>{item.slug} · {item.status}</small>
                     </button>
                     <button type="button" className="admin-remove" onClick={() => removeSavedDraft(item.id)} aria-label={`Delete ${item.title}`}>×</button>
                   </div>
@@ -366,6 +406,19 @@ export function ArticleDraftEditor() {
                   {locales.map((locale) => (
                     <option key={locale} value={locale}>
                       {locale.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span>Article status</span>
+                <select
+                  value={status}
+                  onChange={(event) => setStatus(event.target.value as ArticleStatus)}
+                >
+                  {articleStatuses.map((item) => (
+                    <option key={item.value} value={item.value}>
+                      {item.label}
                     </option>
                   ))}
                 </select>
@@ -422,6 +475,35 @@ export function ArticleDraftEditor() {
                   }
                 />
               </label>
+            </div>
+
+            <div className="admin-card">
+              <h2>Language versions</h2>
+              <p className="admin-muted">
+                Keep one article identity while preparing separate RU, EN and UK copy.
+              </p>
+              <div className="admin-stack">
+                {locales.map((locale) => (
+                  <div className="admin-section-editor" key={locale}>
+                    <strong>{locale.toUpperCase()} version</strong>
+                    <input
+                      value={draft.translations?.[locale]?.title ?? ""}
+                      placeholder="Translated title"
+                      onChange={(event) => setTranslation(locale, "title", event.target.value)}
+                    />
+                    <textarea
+                      value={draft.translations?.[locale]?.summary ?? ""}
+                      placeholder="Translated summary"
+                      onChange={(event) => setTranslation(locale, "summary", event.target.value)}
+                    />
+                    <textarea
+                      value={draft.translations?.[locale]?.quickAnswer ?? ""}
+                      placeholder="Translated quick answer"
+                      onChange={(event) => setTranslation(locale, "quickAnswer", event.target.value)}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="admin-card">

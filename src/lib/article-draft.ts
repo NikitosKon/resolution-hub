@@ -1,4 +1,5 @@
 import type { Locale } from "./locales";
+import { locales } from "./locales";
 
 export type DraftTemplateId =
   "restriction" | "verification" | "payout-hold" | "appeal";
@@ -6,6 +7,12 @@ export type DraftTemplateId =
 export type DraftSection = {
   heading: string;
   body: string;
+};
+
+export type DraftTranslation = {
+  title: string;
+  summary: string;
+  quickAnswer: string;
 };
 
 export type ArticleDraft = {
@@ -22,6 +29,7 @@ export type ArticleDraft = {
   faq: DraftSection[];
   officialSources: string;
   cta: string;
+  translations: Record<Locale, DraftTranslation>;
 };
 
 export type DraftCheck = {
@@ -143,10 +151,18 @@ export function createDraft(templateId: DraftTemplateId): ArticleDraft {
     ],
     officialSources: "",
     cta: "Ask for an individual review in Telegram. No outcome is guaranteed.",
+    translations: {
+      en: { title: "", summary: "", quickAnswer: "" },
+      ru: { title: "", summary: "", quickAnswer: "" },
+      uk: { title: "", summary: "", quickAnswer: "" },
+    },
   };
 }
 
-export function draftToMarkdown(draft: ArticleDraft) {
+export function draftToMarkdown(
+  draft: ArticleDraft,
+  status: "draft" | "review" | "approved" | "published" = "draft",
+) {
   const sections = draft.sections
     .map((section) => `## ${section.heading}\n\n${section.body || "[Draft]"}`)
     .join("\n\n");
@@ -154,6 +170,11 @@ export function draftToMarkdown(draft: ArticleDraft) {
     .map((item) => `### ${item.heading}\n\n${item.body || "[Draft]"}`)
     .join("\n\n");
   return [
+    "---",
+    `status: ${status}`,
+    `slug: ${draft.slug || "[slug]"}`,
+    `locale: ${draft.locale}`,
+    "---",
     `# ${draft.title || "[Title]"}`,
     `Platform: ${draft.platform}`,
     `Locale: ${draft.locale}`,
@@ -172,5 +193,10 @@ export function draftToMarkdown(draft: ArticleDraft) {
     draft.officialSources || "[Draft]",
     "## Telegram CTA",
     draft.cta,
+    "## Language versions",
+    ...locales.map((locale) => {
+      const translation = draft.translations?.[locale];
+      return [`### ${locale.toUpperCase()}`, translation?.title || "[Title]", translation?.summary || "[Summary]", translation?.quickAnswer || "[Quick answer]"].join("\n\n");
+    }),
   ].join("\n\n");
 }

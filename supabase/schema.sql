@@ -4,10 +4,23 @@ create table if not exists public.article_drafts (
   slug text not null,
   title text not null default '',
   draft jsonb not null,
+  status text not null default 'draft',
+  translations jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   unique (owner_id, slug)
 );
+
+alter table public.article_drafts
+  add column if not exists status text not null default 'draft',
+  add column if not exists translations jsonb not null default '{}'::jsonb;
+
+alter table public.article_drafts
+  drop constraint if exists article_drafts_status_check;
+
+alter table public.article_drafts
+  add constraint article_drafts_status_check
+  check (status in ('draft', 'review', 'approved', 'published'));
 
 alter table public.article_drafts enable row level security;
 
