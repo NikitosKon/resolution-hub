@@ -504,6 +504,7 @@ export function ArticleDraftEditor() {
               <p className="eyebrow">Demand backlog</p>
               <h2>Банк идей</h2>
             </div>
+            <strong>{ideas.length}</strong>
             <label className="button secondary admin-upload">
               <Upload size={16} aria-hidden="true" />
               Импорт CSV
