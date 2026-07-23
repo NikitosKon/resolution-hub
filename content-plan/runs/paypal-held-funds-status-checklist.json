@@ -1,0 +1,333 @@
+{
+  "pipeline_version": 4,
+  "slug": "paypal-held-funds-status-checklist",
+  "created_at": "2026-07-23T14:33:29+00:00",
+  "updated_at": "2026-07-23T15:12:05+00:00",
+  "manual_approval": null,
+  "stages": {
+    "seo-researcher": {
+      "status": "complete",
+      "actor": "seo-researcher",
+      "notes": "Completed live official PayPal research; output includes market-scoped facts, source register, evidence gaps, and manual-review/freshness markers.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T14:34:34+00:00",
+      "completed_at": "2026-07-23T14:36:16+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:36:16+00:00",
+      "inputs": [],
+      "outputs": [
+        "research/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "serp-intelligence": {
+      "status": "complete",
+      "actor": "serp-intelligence",
+      "notes": "Created serp/paypal-held-funds-status-checklist.md with required sections, 10 observed results, intent/gaps/opportunities, and explicit confidence limitations.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T14:40:06+00:00",
+      "completed_at": "2026-07-23T14:40:06+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:40:06+00:00",
+      "inputs": [
+        "research/paypal-held-funds-status-checklist.md"
+      ],
+      "outputs": [
+        "serp/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "reader-questions": {
+      "status": "complete",
+      "actor": "reader-questions",
+      "notes": "Created questions/paypal-held-funds-status-checklist.md from the latest research, SERP intelligence, content-plan row, and confirmed-experience register. Questions are classified by evidence level and publication action; no questions were answered and no owner case was invented.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T14:42:59+00:00",
+      "completed_at": "2026-07-23T14:42:59+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:42:59+00:00",
+      "inputs": [
+        "research/paypal-held-funds-status-checklist.md",
+        "serp/paypal-held-funds-status-checklist.md",
+        "content-plan/pages.csv",
+        "knowledge/confirmed-experience/README.md"
+      ],
+      "outputs": [
+        "questions/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "intent-strategist": {
+      "status": "complete",
+      "actor": "intent-strategist",
+      "notes": "Created strategy/paypal-held-funds-status-checklist.md with one diagnostic primary intent, consideration-stage status triage, explicit boundaries for related PayPal pages, and a resolved separation from published funds-held-180-days. Upstream market, freshness, privacy, document, and outcome markers remain blocking where applicable; no article or CTA copy added.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T17:46:27+03:00",
+      "completed_at": "2026-07-23T17:46:27+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T17:46:27+03:00",
+      "inputs": [
+        "content-plan/pages.csv",
+        "research/paypal-held-funds-status-checklist.md",
+        "serp/paypal-held-funds-status-checklist.md",
+        "questions/paypal-held-funds-status-checklist.md",
+        "content-audit/article-inventory.csv",
+        "content-audit/article-inventory.md",
+        "strategy/funds-held-180-days.md"
+      ],
+      "outputs": [
+        "strategy/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "content-architect": {
+      "status": "complete",
+      "actor": "content-architect",
+      "notes": "Created outlines/paypal-held-funds-status-checklist.md with a status-first adaptive structure, market-scoped evidence, conditional account-scope branches, passed-status matrix, and explicit separation from funds-held-180-days and payment-hold-after-sale. Blockers preserved; no prose drafted.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T17:47:00+03:00",
+      "completed_at": "2026-07-23T17:49:17+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T17:49:17+03:00",
+      "inputs": [
+        "research/paypal-held-funds-status-checklist.md",
+        "serp/paypal-held-funds-status-checklist.md",
+        "questions/paypal-held-funds-status-checklist.md",
+        "strategy/paypal-held-funds-status-checklist.md",
+        "outlines/funds-held-180-days.md",
+        "outlines/paypal-payment-hold-after-sale.md"
+      ],
+      "outputs": [
+        "outlines/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "expert-writer": {
+      "status": "complete",
+      "actor": "expert-writer",
+      "notes": "Draft completed: 2258-word RU draft with inline source refs, adaptive structure, uncertainty markers, and open verification items.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": "2026-07-23T14:53:32+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:53:32+00:00",
+      "inputs": [
+        "outlines/paypal-held-funds-status-checklist.md"
+      ],
+      "outputs": [
+        "drafts/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "fact-checker": {
+      "status": "complete",
+      "actor": "fact-checker",
+      "notes": "Created reviews/paypal-held-funds-status-checklist-fact-check.md and drafts/paypal-held-funds-status-checklist-verified.md from latest research, strategy, draft, knowledge, and live official PayPal pages checked 2026-07-23. 35 material claims ledgered; S8 migration URL failed live check and its named control was removed; S9 legacy PDF and market/account scope remain freshness/manual blockers. Original draft unchanged.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": "2026-07-23T18:02:00+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T18:02:00+03:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist.md"
+      ],
+      "outputs": [
+        "reviews/paypal-held-funds-status-checklist-fact-check.md",
+        "drafts/paypal-held-funds-status-checklist-verified.md"
+      ]
+    },
+    "experience-editor": {
+      "status": "complete",
+      "actor": "experience-editor",
+      "notes": "Copied the latest verified draft without changing claims or markers. No matching confirmed Level 2 PayPal status-triage record exists; preserved OPTIONAL_EXPERIENCE_ENHANCEMENT and created a minimal optional owner questionnaire.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": "2026-07-23T18:07:00+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T18:07:00+03:00",
+      "inputs": [
+        "reviews/paypal-held-funds-status-checklist-fact-check.md",
+        "drafts/paypal-held-funds-status-checklist-verified.md"
+      ],
+      "outputs": [
+        "drafts/paypal-held-funds-status-checklist-experience.md",
+        "knowledge/intake/paypal-held-funds-status-checklist-owner-questionnaire.md"
+      ]
+    },
+    "narrative-editor": {
+      "status": "complete",
+      "actor": "narrative-editor",
+      "notes": "Created drafts/paypal-held-funds-status-checklist-narrative.md from the latest experience draft. Preserved front matter, citations, claim IDs, market qualifiers, uncertainty and every blocking/advisory marker; added the required narrative changes note without adding facts.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T18:20:00+03:00",
+      "completed_at": "2026-07-23T18:20:00+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T18:20:00+03:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-experience.md"
+      ],
+      "outputs": [
+        "drafts/paypal-held-funds-status-checklist-narrative.md"
+      ]
+    },
+    "reader-psychology-editor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-narrative.md"
+      ],
+      "outputs": [
+        "drafts/paypal-held-funds-status-checklist-psychology.md"
+      ]
+    },
+    "human-editor": {
+      "status": "complete",
+      "actor": "human-editor",
+      "notes": "Edited the latest psychology draft for clarity, concise transitions, and readable Russian voice without adding facts, changing uncertainty, or removing any evidence or review marker. Added the required Editorial changes note.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T18:08:00+03:00",
+      "completed_at": "2026-07-23T18:09:13+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T18:09:13+03:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-psychology.md"
+      ],
+      "outputs": [
+        "drafts/paypal-held-funds-status-checklist-edited.md"
+      ]
+    },
+    "editorial-rhythm-editor": {
+      "status": "complete",
+      "actor": "rhythm-editor",
+      "notes": "Rhythm pass complete; preserved facts, citations, source distinctions, uncertainty, markers, and CTA boundaries.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T15:12:05+00:00",
+      "completed_at": "2026-07-23T15:12:05+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T15:12:05+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-edited.md"
+      ],
+      "outputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ]
+    },
+    "entity-coverage": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ],
+      "outputs": [
+        "reviews/paypal-held-funds-status-checklist-entities.md"
+      ]
+    },
+    "internal-linking": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ],
+      "outputs": [
+        "prepared/paypal-held-funds-status-checklist-links.md"
+      ]
+    },
+    "seo-optimizer": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ],
+      "outputs": [
+        "prepared/paypal-held-funds-status-checklist.md"
+      ]
+    },
+    "conversion-editor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ],
+      "outputs": [
+        "prepared/paypal-held-funds-status-checklist-conversion.md"
+      ]
+    },
+    "duplicate-detector": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ],
+      "outputs": [
+        "reviews/paypal-held-funds-status-checklist-duplicate.md"
+      ]
+    },
+    "template-pattern-auditor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+      ],
+      "outputs": [
+        "reviews/paypal-held-funds-status-checklist-template-patterns.md"
+      ]
+    },
+    "final-qa": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "reviews/paypal-held-funds-status-checklist-entities.md",
+        "prepared/paypal-held-funds-status-checklist-links.md",
+        "prepared/paypal-held-funds-status-checklist.md",
+        "prepared/paypal-held-funds-status-checklist-conversion.md",
+        "reviews/paypal-held-funds-status-checklist-duplicate.md",
+        "reviews/paypal-held-funds-status-checklist-template-patterns.md"
+      ],
+      "outputs": [
+        "reviews/paypal-held-funds-status-checklist-qa.md"
+      ]
+    }
+  }
+}

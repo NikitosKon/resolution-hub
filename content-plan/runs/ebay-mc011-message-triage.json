@@ -1,0 +1,318 @@
+{
+  "pipeline_version": 4,
+  "slug": "ebay-mc011-message-triage",
+  "created_at": "2026-07-23T14:33:29+00:00",
+  "updated_at": "2026-07-23T14:53:22+00:00",
+  "manual_approval": null,
+  "stages": {
+    "seo-researcher": {
+      "status": "complete",
+      "actor": "seo-researcher",
+      "notes": "Completed official eBay US/UK/Japan live research on 2026-07-23; market-specific MC011 evidence and manual-review gaps preserved; output only research artifact, no downstream edits.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T14:34:35+00:00",
+      "completed_at": "2026-07-23T14:36:09+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:36:09+00:00",
+      "inputs": [],
+      "outputs": [
+        "research/ebay-mc011-message-triage.md"
+      ]
+    },
+    "serp-intelligence": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "research/ebay-mc011-message-triage.md"
+      ],
+      "outputs": [
+        "serp/ebay-mc011-message-triage.md"
+      ]
+    },
+    "reader-questions": {
+      "status": "complete",
+      "actor": "reader-questions",
+      "notes": "Created issue-specific Russian reader questions from the latest research, SERP sample, plan row, and confirmed-experience status; official, observed-pattern, owner-input, and unsafe/unanswerable boundaries are separated.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T17:41:54+03:00",
+      "completed_at": "2026-07-23T17:41:54+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T17:41:54+03:00",
+      "inputs": [
+        "serp/ebay-mc011-message-triage.md"
+      ],
+      "outputs": [
+        "questions/ebay-mc011-message-triage.md"
+      ]
+    },
+    "intent-strategist": {
+      "status": "complete",
+      "actor": "intent-strategist",
+      "notes": "Created the diagnostic strategy from the latest row, research, SERP, reader questions and article inventory; resolved cannibalization boundaries with published mc011-restriction and mc011-documents-requested; preserved all manual-review and freshness markers.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T17:45:06+03:00",
+      "completed_at": "2026-07-23T17:45:06+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T17:45:06+03:00",
+      "inputs": [
+        "questions/ebay-mc011-message-triage.md"
+      ],
+      "outputs": [
+        "strategy/ebay-mc011-message-triage.md"
+      ]
+    },
+    "content-architect": {
+      "status": "complete",
+      "actor": "content-architect",
+      "notes": "Replaced the adaptive diagnostic outline from the latest research, SERP, reader questions, strategy, intent-resolution audit, and related outlines. Preserved market, notice, source-freshness, manual-review, and experience blockers; separated triage from mc011-restriction and mc011-documents-requested; no prose or publication artifacts changed.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T17:48:00+03:00",
+      "completed_at": "2026-07-23T17:50:07+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T17:50:07+03:00",
+      "inputs": [
+        "strategy/ebay-mc011-message-triage.md"
+      ],
+      "outputs": [
+        "outlines/ebay-mc011-message-triage.md"
+      ]
+    },
+    "expert-writer": {
+      "status": "complete",
+      "actor": "expert-writer",
+      "notes": "Created 2,355-word RU draft with message-first triage, request classification table, market-scoped source notes, uncertainty states, safety boundaries, conditional sibling handoff, Telegram scope, inline source refs, and Open verification items.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T14:51:32+00:00",
+      "completed_at": "2026-07-23T14:53:22+00:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:53:22+00:00",
+      "inputs": [
+        "outlines/ebay-mc011-message-triage.md"
+      ],
+      "outputs": [
+        "drafts/ebay-mc011-message-triage.md"
+      ]
+    },
+    "fact-checker": {
+      "status": "complete",
+      "actor": "fact-checker",
+      "notes": "Rechecked the 2,355-word RU draft against live eBay UK/US/Japan restriction, seller-registration, appeal, security, and policy pages on 2026-07-23. Created the complete material-claim ledger and verified copy; retained market, notice, freshness, boundary, and experience blockers. Original draft unchanged.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T17:52:00+03:00",
+      "completed_at": "2026-07-23T17:57:08+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T17:57:08+03:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage.md"
+      ],
+      "outputs": [
+        "reviews/ebay-mc011-message-triage-fact-check.md",
+        "drafts/ebay-mc011-message-triage-verified.md"
+      ]
+    },
+    "experience-editor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "reviews/ebay-mc011-message-triage-fact-check.md",
+        "drafts/ebay-mc011-message-triage-verified.md"
+      ],
+      "outputs": [
+        "drafts/ebay-mc011-message-triage-experience.md"
+      ]
+    },
+    "narrative-editor": {
+      "status": "complete",
+      "actor": "narrative-editor",
+      "notes": "Reframed the opening around a reader who sees MC011, added transitions from message classification to the request card and final verification, and preserved all citations, market boundaries, claim IDs and blocking markers. No new factual claims or owner experience added.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T18:10:00+03:00",
+      "completed_at": "2026-07-23T18:10:00+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T18:10:00+03:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-experience.md"
+      ],
+      "outputs": [
+        "drafts/ebay-mc011-message-triage-narrative.md"
+      ]
+    },
+    "reader-psychology-editor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-narrative.md"
+      ],
+      "outputs": [
+        "drafts/ebay-mc011-message-triage-psychology.md"
+      ]
+    },
+    "human-editor": {
+      "status": "complete",
+      "actor": "human-editor",
+      "notes": "Created the latest human-edited draft from the psychology pass. Preserved front matter, citations, uncertainty, market boundaries, all blocking/advisory markers, and the diagnostic boundary; improved transitions and removed minor canned phrasing without adding facts, experience, or promises.",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": "2026-07-23T18:30:00+03:00",
+      "completed_at": "2026-07-23T18:30:00+03:00",
+      "failed_at": null,
+      "updated_at": "2026-07-23T18:30:00+03:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-psychology.md"
+      ],
+      "outputs": [
+        "drafts/ebay-mc011-message-triage-edited.md"
+      ]
+    },
+    "editorial-rhythm-editor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-edited.md"
+      ],
+      "outputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ]
+    },
+    "entity-coverage": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ],
+      "outputs": [
+        "reviews/ebay-mc011-message-triage-entities.md"
+      ]
+    },
+    "internal-linking": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ],
+      "outputs": [
+        "prepared/ebay-mc011-message-triage-links.md"
+      ]
+    },
+    "seo-optimizer": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ],
+      "outputs": [
+        "prepared/ebay-mc011-message-triage.md"
+      ]
+    },
+    "conversion-editor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ],
+      "outputs": [
+        "prepared/ebay-mc011-message-triage-conversion.md"
+      ]
+    },
+    "duplicate-detector": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ],
+      "outputs": [
+        "reviews/ebay-mc011-message-triage-duplicate.md"
+      ]
+    },
+    "template-pattern-auditor": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "drafts/ebay-mc011-message-triage-rhythm.md"
+      ],
+      "outputs": [
+        "reviews/ebay-mc011-message-triage-template-patterns.md"
+      ]
+    },
+    "final-qa": {
+      "status": "pending",
+      "actor": null,
+      "notes": "",
+      "created_at": "2026-07-23T14:33:29+00:00",
+      "started_at": null,
+      "completed_at": null,
+      "failed_at": null,
+      "updated_at": "2026-07-23T14:33:29+00:00",
+      "inputs": [
+        "reviews/ebay-mc011-message-triage-entities.md",
+        "prepared/ebay-mc011-message-triage-links.md",
+        "prepared/ebay-mc011-message-triage.md",
+        "prepared/ebay-mc011-message-triage-conversion.md",
+        "reviews/ebay-mc011-message-triage-duplicate.md",
+        "reviews/ebay-mc011-message-triage-template-patterns.md"
+      ],
+      "outputs": [
+        "reviews/ebay-mc011-message-triage-qa.md"
+      ]
+    }
+  }
+}
