@@ -883,7 +883,9 @@ function publishedContent(brief: Brief, locale: Locale): LocalizedIssueContent {
         : isRu
           ? "PayPal удерживает деньги 180 дней: что проверить"
           : "PayPal утримує кошти 180 днів: що перевірити"
-      : `${brief.title[locale]} | ${n} guide`.slice(0, 75),
+      : (brief.title[locale].length >= 20
+          ? brief.title[locale]
+          : `${brief.title[locale]} | ${n}`).slice(0, 75),
     metaDescription: isPayPal180DayHold
       ? isEn
         ? "PayPal 180-day hold explained: check the notice date, account market and balance status without treating day 180 as a guaranteed release date."
