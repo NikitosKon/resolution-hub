@@ -827,6 +827,8 @@ function publishedContent(brief: Brief, locale: Locale): LocalizedIssueContent {
   const isPayPalBalanceAfterLimitation =
     brief.platformId === "paypal" &&
     brief.slug === "funds-frozen-after-limitation";
+  const isPayPal180DayHold =
+    brief.platformId === "paypal" && brief.slug === "funds-held-180-days";
   const reasonTitle = isMc011Restriction
     ? isEn
       ? "What the notice can tell you"
@@ -875,8 +877,20 @@ function publishedContent(brief: Brief, locale: Locale): LocalizedIssueContent {
       : "Почніть із точного повідомлення в акаунті, а не з припущень на форумах.";
   return {
     title: brief.title[locale],
-    metaTitle: `${brief.title[locale]} | ${n} guide`.slice(0, 75),
-    metaDescription: isMc011Restriction
+    metaTitle: isPayPal180DayHold
+      ? isEn
+        ? "PayPal 180-Day Hold: What to Check Next"
+        : isRu
+          ? "PayPal удерживает деньги 180 дней: что проверить"
+          : "PayPal утримує кошти 180 днів: що перевірити"
+      : `${brief.title[locale]} | ${n} guide`.slice(0, 75),
+    metaDescription: isPayPal180DayHold
+      ? isEn
+        ? "PayPal 180-day hold explained: check the notice date, account market and balance status without treating day 180 as a guaranteed release date."
+        : isRu
+          ? "PayPal удерживает деньги 180 дней? Проверьте дату уведомления, рынок аккаунта и статус баланса — день 180 не гарантирует выплату."
+          : "PayPal утримує кошти 180 днів? Перевірте дату повідомлення, ринок акаунта та стан балансу — день 180 не гарантує виплату."
+      : isMc011Restriction
       ? isEn
         ? "Understand an eBay MC011 notice: verify it in signed-in Messages, identify the affected account functions, and classify the next step without guessing."
         : isRu
