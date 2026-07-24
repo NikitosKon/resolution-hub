@@ -2,7 +2,7 @@
   "pipeline_version": 4,
   "slug": "ebay-mc011-message-triage",
   "created_at": "2026-07-23T14:33:29+00:00",
-  "updated_at": "2026-07-23T14:53:22+00:00",
+  "updated_at": "2026-07-24T05:12:33+00:00",
   "manual_approval": null,
   "stages": {
     "seo-researcher": {
@@ -20,14 +20,14 @@
       ]
     },
     "serp-intelligence": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "serp-intelligence",
+      "notes": "SERP artifact verified non-empty with 12 contextual results and explicit access limits.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:12:33+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:12:33+00:00",
       "inputs": [
         "research/ebay-mc011-message-triage.md"
       ],
@@ -117,14 +117,14 @@
       ]
     },
     "experience-editor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "experience-editor",
+      "notes": "Experience artifact and minimal owner questionnaire verified; no confirmed owner case, EXPERIENCE_REQUIRED preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:12:33+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:12:33+00:00",
       "inputs": [
         "reviews/ebay-mc011-message-triage-fact-check.md",
         "drafts/ebay-mc011-message-triage-verified.md"
@@ -150,14 +150,14 @@
       ]
     },
     "reader-psychology-editor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "reader-psychology-editor",
+      "notes": "Psychology artifact verified non-empty; page-specific reader sequence review present, markers preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:09:22+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:09:22+00:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-narrative.md"
       ],
@@ -182,14 +182,14 @@
       ]
     },
     "editorial-rhythm-editor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "editorial-rhythm-editor",
+      "notes": "Rhythm artifact verified non-empty; preserved facts, citations, CTA and markers.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:06:28+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:28+00:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-edited.md"
       ],
@@ -198,14 +198,14 @@
       ]
     },
     "entity-coverage": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "entity-coverage",
+      "notes": "Entity report verified non-empty; article unchanged and markers preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:06:29+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:29+00:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-rhythm.md"
       ],
@@ -214,14 +214,14 @@
       ]
     },
     "internal-linking": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "internal-linking",
+      "notes": "Created a market-aware RU internal-link plan. Live outbound destinations are limited to the eBay platform page, verification hub, account-suspensions hub, payout-holds hub, and the current-release MC011 documents guide; planned siblings remain non-clickable. No routes, content, taxonomy, related IDs, or publication status changed.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:00:00+03:00",
+      "completed_at": "2026-07-24T00:00:00+03:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T00:00:00+03:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-rhythm.md"
       ],
@@ -230,14 +230,14 @@
       ]
     },
     "seo-optimizer": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "seo-optimizer",
+      "notes": "Prepared the complete unchanged rhythm article with metadata, contextual internal-link recommendations, canonical/hreflang instructions, conditional FAQ/schema decisions, and all existing markers preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:00:00+03:00",
+      "completed_at": "2026-07-24T00:00:00+03:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T00:00:00+03:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-rhythm.md"
       ],
@@ -246,14 +246,14 @@
       ]
     },
     "conversion-editor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "conversion-editor",
+      "notes": "Conversion report verified; exact Telegram destination and no-guarantee scope preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:00:00+03:00",
+      "completed_at": "2026-07-24T05:06:29+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:29+00:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-rhythm.md"
       ],
@@ -262,14 +262,14 @@
       ]
     },
     "duplicate-detector": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "duplicate-detector",
+      "notes": "Compared the current RU rhythm draft against the complete local issue inventory, prepared/draft corpus, V4 source, content plan, strategy, and MC011 intent-resolution audit. Score 47/100: material collision with mc011-restriction and evidence-preparation overlap with mc011-documents-requested. D.REPOSITION_ONE_PAGE is required before publication; no article edits or URL changes made.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:20:00+03:00",
+      "completed_at": "2026-07-24T00:20:00+03:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T00:20:00+03:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-rhythm.md"
       ],
@@ -278,14 +278,14 @@
       ]
     },
     "template-pattern-auditor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "template-pattern-auditor",
+      "notes": "Template pattern report verified; Result PASS and corpus limitations recorded.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:06:29+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:29+00:00",
       "inputs": [
         "drafts/ebay-mc011-message-triage-rhythm.md"
       ],
@@ -294,14 +294,14 @@
       ]
     },
     "final-qa": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "final-qa",
+      "notes": "Final QA report verified; DECISION: FAIL due duplicate score 47 and unresolved evidence/experience blockers.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:12:33+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:12:33+00:00",
       "inputs": [
         "reviews/ebay-mc011-message-triage-entities.md",
         "prepared/ebay-mc011-message-triage-links.md",

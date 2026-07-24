@@ -2,7 +2,7 @@
   "pipeline_version": 4,
   "slug": "paypal-held-funds-status-checklist",
   "created_at": "2026-07-23T14:33:29+00:00",
-  "updated_at": "2026-07-23T15:12:05+00:00",
+  "updated_at": "2026-07-24T05:12:33+00:00",
   "manual_approval": null,
   "stages": {
     "seo-researcher": {
@@ -165,14 +165,14 @@
       ]
     },
     "reader-psychology-editor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "reader-psychology-editor",
+      "notes": "Psychology artifact verified non-empty; page-specific reader sequence review present, markers preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:09:22+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:09:22+00:00",
       "inputs": [
         "drafts/paypal-held-funds-status-checklist-narrative.md"
       ],
@@ -198,13 +198,13 @@
     },
     "editorial-rhythm-editor": {
       "status": "complete",
-      "actor": "rhythm-editor",
-      "notes": "Rhythm pass complete; preserved facts, citations, source distinctions, uncertainty, markers, and CTA boundaries.",
+      "actor": "editorial-rhythm-editor",
+      "notes": "Rhythm artifact verified non-empty; preserved facts, citations, CTA and markers.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": "2026-07-23T15:12:05+00:00",
-      "completed_at": "2026-07-23T15:12:05+00:00",
+      "completed_at": "2026-07-24T05:06:28+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T15:12:05+00:00",
+      "updated_at": "2026-07-24T05:06:28+00:00",
       "inputs": [
         "drafts/paypal-held-funds-status-checklist-edited.md"
       ],
@@ -213,14 +213,14 @@
       ]
     },
     "entity-coverage": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "entity-coverage",
+      "notes": "Entity report verified non-empty; article unchanged and markers preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:06:28+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:28+00:00",
       "inputs": [
         "drafts/paypal-held-funds-status-checklist-rhythm.md"
       ],
@@ -229,46 +229,56 @@
       ]
     },
     "internal-linking": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "internal-linking",
+      "notes": "Created the status-triage internal-link plan with explicit PayPal/payout-holds parents, conditional long-hold/account-limitation/appeal handoffs, non-clickable planned branches, anchor diversity, inbound opportunities, and orphan-risk validation. No routes or article content changed.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:00:00+03:00",
+      "completed_at": "2026-07-24T00:00:00+03:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T00:00:00+03:00",
       "inputs": [
-        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+        "drafts/paypal-held-funds-status-checklist-rhythm.md",
+        "strategy/paypal-held-funds-status-checklist.md",
+        "content-plan/pages.csv",
+        "content-audit/article-inventory.csv",
+        "src/data/release.ts",
+        "src/data/issues.ts",
+        "src/app/[locale]/[[...segments]]/page.tsx",
+        "src/components/pages.tsx"
       ],
       "outputs": [
         "prepared/paypal-held-funds-status-checklist-links.md"
       ]
     },
     "seo-optimizer": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "seo-optimizer",
+      "notes": "Prepared metadata and schema decisions from the latest rhythm draft, research, strategy, and article inventory. Article body and all review markers preserved unchanged; FAQPage declined because no visible FAQ block exists.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:00:00+03:00",
+      "completed_at": "2026-07-24T00:00:00+03:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T00:00:00+03:00",
       "inputs": [
-        "drafts/paypal-held-funds-status-checklist-rhythm.md"
+        "drafts/paypal-held-funds-status-checklist-rhythm.md",
+        "research/paypal-held-funds-status-checklist.md",
+        "strategy/paypal-held-funds-status-checklist.md",
+        "content-audit/article-inventory.csv"
       ],
       "outputs": [
         "prepared/paypal-held-funds-status-checklist.md"
       ]
     },
     "conversion-editor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "conversion-editor",
+      "notes": "Conversion report verified; exact Telegram destination and no-guarantee scope preserved.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:06:28+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:28+00:00",
       "inputs": [
         "drafts/paypal-held-funds-status-checklist-rhythm.md"
       ],
@@ -277,14 +287,14 @@
       ]
     },
     "duplicate-detector": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "duplicate-detector",
+      "notes": "Compared the current rhythm draft against the complete local reader-facing corpus, published PayPal siblings, proposed payment-hold and withdrawal intents, and cross-platform bodies. Score 38/100; KEEP_SEPARATE conditional on explicit status-triage and handoff boundaries. No article edits.",
       "created_at": "2026-07-23T14:33:29+00:00",
-      "started_at": null,
-      "completed_at": null,
+      "started_at": "2026-07-24T00:00:00+03:00",
+      "completed_at": "2026-07-24T00:00:00+03:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T00:00:00+03:00",
       "inputs": [
         "drafts/paypal-held-funds-status-checklist-rhythm.md"
       ],
@@ -293,14 +303,14 @@
       ]
     },
     "template-pattern-auditor": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "template-pattern-auditor",
+      "notes": "Template pattern report verified; Result PASS and corpus limitations recorded.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:06:29+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:06:29+00:00",
       "inputs": [
         "drafts/paypal-held-funds-status-checklist-rhythm.md"
       ],
@@ -309,14 +319,14 @@
       ]
     },
     "final-qa": {
-      "status": "pending",
-      "actor": null,
-      "notes": "",
+      "status": "complete",
+      "actor": "final-qa",
+      "notes": "Final QA report verified; DECISION: FAIL due unresolved evidence and publication blockers.",
       "created_at": "2026-07-23T14:33:29+00:00",
       "started_at": null,
-      "completed_at": null,
+      "completed_at": "2026-07-24T05:12:33+00:00",
       "failed_at": null,
-      "updated_at": "2026-07-23T14:33:29+00:00",
+      "updated_at": "2026-07-24T05:12:33+00:00",
       "inputs": [
         "reviews/paypal-held-funds-status-checklist-entities.md",
         "prepared/paypal-held-funds-status-checklist-links.md",
