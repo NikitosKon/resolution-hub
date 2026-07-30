@@ -15,9 +15,9 @@ export const fundsHeld180DaysV4: V4LocalizedArticle = {
   en: {
     title:
       "PayPal funds held for up to 180 days: what the notice means and what to check next",
-    metaTitle: "PayPal Funds Held for Up to 180 Days: What to Check",
+    metaTitle: "PayPal 180-Day Hold: What to Check Next",
     metaDescription:
-      "See what a PayPal 180-day hold may mean, which account market and notice date matter, and what to check if the shown date has passed.",
+      "PayPal says funds may be held for up to 180 days. Check the notice date, account market and balance status before contacting support.",
     intro:
       "“Up to 180 days” is not a universal PayPal deadline, and day 180 is not a documented global promise that every balance will be released automatically. The wording depends on the agreement governing the registered account.",
     quickAnswerTitle: "What the notice means",
@@ -234,9 +234,9 @@ export const fundsHeld180DaysV4: V4LocalizedArticle = {
   ru: {
     title:
       "PayPal удерживает средства до 180 дней: как читать уведомление и что сверить",
-    metaTitle: "PayPal удерживает деньги до 180 дней: что проверить",
+    metaTitle: "PayPal удерживает деньги 180 дней: что проверить",
     metaDescription:
-      "Разберитесь, что означает удержание PayPal на 180 дней, почему важны рынок аккаунта и дата в уведомлении и что проверить после этой даты.",
+      "PayPal удерживает деньги до 180 дней? Проверьте дату уведомления, рынок аккаунта и статус баланса перед обращением в поддержку.",
     intro:
       "Фраза «до 180 дней» не означает единый срок для всех аккаунтов PayPal. Она также не подтверждает, что на 180-й день весь баланс разблокируется автоматически. В действующем соглашении для США такой период прямо указан для определённых удержаний, связанных с риском ответственности или нарушением Acceptable Use Policy. Проверенные соглашения для Украины и рынков PayPal Pte. Ltd. не дают оснований считать 180 дней одинаковым максимальным сроком для всех случаев. Кроме того, юридические и регуляторные процессы могут продлить удержание.",
     quickAnswerTitle: "Что означает уведомление",
@@ -448,9 +448,9 @@ export const fundsHeld180DaysV4: V4LocalizedArticle = {
   uk: {
     title:
       "PayPal утримує кошти до 180 днів: як зрозуміти повідомлення і що перевірити",
-    metaTitle: "PayPal утримує гроші до 180 днів: що перевірити",
+    metaTitle: "PayPal утримує кошти 180 днів: що перевірити",
     metaDescription:
-      "Розберіться, що означає утримання PayPal на 180 днів, чому важливі ринок акаунта й дата в повідомленні та що перевірити далі.",
+      "PayPal утримує кошти до 180 днів? Перевірте дату повідомлення, ринок акаунта та стан балансу перед зверненням у підтримку.",
     intro:
       "«До 180 днів» — не єдиний строк для всіх акаунтів PayPal і не підтверджена глобальна обіцянка автоматично відкрити весь баланс на 180-й день.",
     quickAnswerTitle: "Що означає повідомлення",

@@ -15,9 +15,9 @@ export const frozenAfterSaleV4: V4LocalizedArticle = {
   en: {
     title:
       "Grailed account frozen after a sale: check the order, payout, and account separately",
-    metaTitle: "Grailed Account Frozen After a Sale: What to Check",
+    metaTitle: "Grailed Account Frozen After Selling: What to Check",
     metaDescription:
-      "If Grailed froze your account after a sale, check the order, account access, payout release and cash-out separately before contacting support.",
+      "Grailed account frozen after selling? Check the order, account access, payout status and cash-out separately before contacting support.",
     intro:
       "An account freeze and a sale may happen close together without the sale causing the freeze. Grailed says accounts may be frozen for suspected or actual Code of Conduct or Terms violations, but the reviewed official sources do not define “a sale caused the freeze” as a rule. The notice and its cited reason are needed for any case-specific connection.",
     quickAnswerTitle: "Check four separate states",
@@ -213,7 +213,7 @@ export const frozenAfterSaleV4: V4LocalizedArticle = {
       "Аккаунт Grailed заморожен после продажи: проверьте заказ, выплату и доступ по отдельности",
     metaTitle: "Grailed заморозил аккаунт после продажи: что проверить",
     metaDescription:
-      "Если Grailed заморозил аккаунт после продажи, отдельно проверьте заказ, доступ, разблокировку выплаты и вывод средств перед обращением в поддержку.",
+      "Grailed заморозил аккаунт после продажи? Отдельно проверьте заказ, доступ, статус выплаты и вывод средств перед обращением в поддержку.",
     intro:
       "Продажа и заморозка могли просто совпасть по времени. Grailed пишет, что аккаунт может быть заморожен при подозрении на нарушение или при нарушении Code of Conduct либо Terms of Service, но официальные материалы не подтверждают правило «сама продажа вызвала заморозку». Для вывода по конкретному случаю нужны формулировка уведомления и указанная в нём причина.",
     quickAnswerTitle: "Проверьте четыре разных статуса",
@@ -390,7 +390,7 @@ export const frozenAfterSaleV4: V4LocalizedArticle = {
       "Акаунт Grailed заморожено після продажу: окремо перевірте замовлення, виплату й доступ",
     metaTitle: "Grailed заморозив акаунт після продажу: що перевірити",
     metaDescription:
-      "Якщо Grailed заморозив акаунт після продажу, окремо перевірте замовлення, доступ, розблокування виплати й виведення коштів.",
+      "Grailed заморозив акаунт після продажу? Окремо перевірте замовлення, доступ, статус виплати й виведення коштів.",
     intro:
       "Продаж і замороження могли збігтися в часі. Grailed пояснює, що акаунт може бути заморожено через підозру в порушенні або фактичне порушення Code of Conduct чи Terms of Service, але офіційні матеріали не підтверджують, що сам продаж спричиняє замороження. Для висновку щодо конкретної справи потрібні повідомлення Grailed та зазначена в ньому підстава.",
     quickAnswerTitle: "Перевірте чотири окремі стани",
