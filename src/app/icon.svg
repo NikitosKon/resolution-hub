@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title>Resolution Hub</title>
+  <rect width="64" height="64" rx="16" fill="#090c11"/>
+  <path d="M18 16h14.5c8.5 0 13.5 4.8 13.5 11.2 0 4.8-2.8 8.3-7.6 9.8L47 48H37.5l-7.3-10H26v10h-8V16Zm8 7v8h6.2c3.7 0 5.7-1.4 5.7-4s-2-4-5.7-4H26Z" fill="#eef3f8"/>
+  <path d="M18 52h28" stroke="#9bb9d9" stroke-width="4" stroke-linecap="round"/>
+</svg>
