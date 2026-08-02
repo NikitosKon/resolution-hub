@@ -45,7 +45,7 @@ test("draft pages stay out of the issue sitemap", () => {
       lastmod: issue.updatedAt,
     })),
   );
-  assert.equal((xml.match(/<url>/g) || []).length, 9);
+  assert.equal((xml.match(/<url>/g) || []).length, 12);
   assert.ok(!xml.includes("paypal/account-restricted"));
   assert.ok(!xml.includes("paypal/permanently-limited"));
 });
@@ -57,7 +57,7 @@ test("RSS contains only the controlled release", async () => {
     },
   );
   const xml = await response.text();
-  assert.equal((xml.match(/<item>/g) || []).length, 3);
+  assert.equal((xml.match(/<item>/g) || []).length, 4);
   for (const issue of publishedIssues)
     assert.ok(xml.includes(`/${issue.platformId}/${issue.slug}/`));
   assert.ok(!xml.includes("paypal/permanently-limited"));

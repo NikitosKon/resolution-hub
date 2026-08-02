@@ -1303,6 +1303,9 @@ const topicSlugs: Record<string, string[]> = {
     "how-to-appeal",
     "payout-on-hold",
     "payment-pending",
+    // V4 structured content is registered separately and is released only
+    // when currentRelease and Final QA both permit publication.
+    "payout-pending-after-delivery",
     "listing-removed",
     "authenticity-issue",
     "counterfeit-claim",
@@ -1536,13 +1539,34 @@ const draftIssues: IssuePage[] = Object.entries(topicSlugs).flatMap(
               : "informational",
         tags: [slug.split("-")[0] || "account"],
         priority: 3,
-        status: "draft",
-        updatedAt: "2026-07-15",
-        reviewedAt: null,
-        reviewStatus: "unreviewed",
-        sources: [],
+        status:
+          platformId === "grailed" && slug === "payout-pending-after-delivery"
+            ? "published"
+            : "draft",
+        updatedAt:
+          platformId === "grailed" && slug === "payout-pending-after-delivery"
+            ? "2026-08-02"
+            : "2026-07-15",
+        reviewedAt:
+          platformId === "grailed" && slug === "payout-pending-after-delivery"
+            ? "2026-08-02"
+            : null,
+        reviewStatus:
+          platformId === "grailed" && slug === "payout-pending-after-delivery"
+            ? "fact-checked"
+            : "unreviewed",
+        sources:
+          platformId === "grailed" && slug === "payout-pending-after-delivery"
+            ? [
+                "https://support.grailed.com/hc/en-us/articles/30298995312653-When-do-I-get-paid",
+                "https://support.grailed.com/hc/en-us/articles/30298942151949-I-just-sold-an-item-on-Grailed-what-s-next",
+                "https://support.grailed.com/hc/en-us/articles/30299395757837-Do-I-need-to-ship-my-sold-item-with-tracking-information",
+                "https://support.grailed.com/hc/en-us/articles/30299037200013-How-do-transactions-qualify-for-faster-payouts",
+              ]
+            : [],
         needsLegalReview: false,
-        needsFactCheck: true,
+        needsFactCheck:
+          !(platformId === "grailed" && slug === "payout-pending-after-delivery"),
         keywords: {
           primary: `${names[platformId]} ${pretty(slug)}`.toLowerCase(),
           secondary: [pretty(slug)],

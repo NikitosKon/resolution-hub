@@ -13,15 +13,16 @@ import { getV4Article } from "@/data/v4";
 test("content registry has the intended staged inventory", () => {
   assert.equal(platforms.length, 15);
   assert.ok(issues.length >= 165);
-  assert.equal(publishedIssues.length, 3);
+  assert.equal(publishedIssues.length, 4);
 });
-test("the controlled release contains only the three QA-passed pilots", () => {
+test("the controlled release contains only QA-passed pilots", () => {
   assert.deepEqual(
     currentRelease.map((entry) => [entry.issueId, entry.qaDecision]),
     [
       ["paypal-funds-held-180-days", "PASS"],
       ["ebay-mc011-documents-requested", "PASS"],
       ["grailed-frozen-after-sale", "PASS"],
+      ["grailed-payout-pending-after-delivery", "PASS"],
     ],
   );
   assert.deepEqual(
@@ -30,7 +31,7 @@ test("the controlled release contains only the three QA-passed pilots", () => {
   );
   assert.equal(
     issues.filter((issue) => issue.status === "published").length,
-    20,
+    21,
     "legacy source statuses remain preserved while release eligibility is gated",
   );
 });
